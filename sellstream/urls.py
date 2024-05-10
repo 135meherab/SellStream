@@ -27,6 +27,7 @@ urlpatterns = [
     path('ad/', include('administration.urls')),
     # Employee
     path('ep/', include('employee.urls')),
+    path('product/',include('product.urls')),
 ]
 
 
