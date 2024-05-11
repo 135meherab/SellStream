@@ -14,6 +14,7 @@ class ProductAdd(viewsets.ModelViewSet):
     serializer_class = ProductSerializer
 
 class order_create(CreateAPIView):
+    queryset = Order.objects.none()  # Define a dummy queryset
     serializer_class = OrderSerializer    # Specify the serializer class
     def create(self,request,*args,**kwargs):
         serializer = self.get_serializer(data=request.data)
