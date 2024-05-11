@@ -10,19 +10,19 @@ class EmployeeViews(viewsets.ModelViewSet):
     serializer_class = EmployeeSerializer
     permission_classes = [IsAuthenticated] 
 
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        name = self.request.query_params.get('name')
-        if name:
-            queryset = queryset.filter(first_name__icontains=name)
-        return queryset
+    # def get_queryset(self):
+    #     queryset = super().get_queryset()
+    #     name = self.request.query_params.get('name')
+    #     if name:
+    #         queryset = queryset.filter(first_name__icontains=name)
+    #     return queryset
 
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        name = self.request.query_params.get('name')
-        if name:
-            queryset = queryset.filter(last_name__icontains=name)
-        return queryset
+    # def get_queryset(self):
+    #     queryset = super().get_queryset()
+    #     name = self.request.query_params.get('name')
+    #     if name:
+    #         queryset = queryset.filter(last_name__icontains=name)
+    #     return queryset
 
 class ShiftViews(viewsets.ModelViewSet):
     queryset = ShiftModel.objects.all()

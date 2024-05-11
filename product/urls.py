@@ -1,5 +1,15 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
+<<<<<<< HEAD
+from .views import ProductAdd
+
+
+router = DefaultRouter()
+router.register('',ProductAdd)
+
+urlpatterns = [
+    path('',include(router.urls)),
+=======
 from .views import ProductAdd, order_create,order_list,Customer_create,Customer_list,CustomerDelete,Uom_create,Uom_list,Category_create,Category_list
 
 
@@ -17,4 +27,5 @@ urlpatterns = [
     path('uom/list/', Uom_list.as_view(), name='uom-list'),
     path('category/', Category_create.as_view(), name='category-create'),
     path('category/list/', Category_list.as_view(), name='category-list'),
+>>>>>>> c1d3c7f76dd2f2a4d6b3589fccf6c8b88f483f9a
 ]
