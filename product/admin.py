@@ -1,8 +1,8 @@
 from django.contrib import admin
-<<<<<<< HEAD
+
 
 # Register your models here.
-=======
+
 from .models import Category, Uom, Customer, Product, Order
 
 # Register your models here.
@@ -26,4 +26,4 @@ admin.site.register(Product,ProductAdmin)
 admin.site.register(Order,OrderAdmin)
 admin.site.register(Uom)
 admin.site.register(Customer,CustomerAdmin)
->>>>>>> c1d3c7f76dd2f2a4d6b3589fccf6c8b88f483f9a
+

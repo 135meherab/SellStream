@@ -27,11 +27,10 @@ urlpatterns = [
     path('ad/', include('administration.urls')),
     # Employee
     path('ep/', include('employee.urls')),
-<<<<<<< HEAD
+
     path('product/',include('product.urls')),
-=======
+
     path('',include('product.urls')),
->>>>>>> c1d3c7f76dd2f2a4d6b3589fccf6c8b88f483f9a
 ]
 
 
