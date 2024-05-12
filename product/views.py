@@ -7,6 +7,7 @@ from rest_framework.generics import CreateAPIView
 from rest_framework.generics import ListAPIView
 from .models import Category,Customer,Uom,Product, Order
 from .serializers import CategorySerializer,CustomerSerializer,UomSerializers,ProductSerializer,OrderSerializer
+from rest_framework.viewsets import ModelViewSet
 # Create your views here.
 
 class Product(viewsets.ModelViewSet):
@@ -14,15 +15,15 @@ class Product(viewsets.ModelViewSet):
     serializer_class = ProductSerializer
         
 class Uom_create(CreateAPIView):
-    queryset = Category.objects.all() # Specify the serializer class
+    queryset = Uom.objects.all() # Specify the serializer class
     serializer_class = UomSerializers
     
 class Uom_list(ListAPIView):
     queryset = Uom.objects.all()
     serializer_class = UomSerializers
     
-class Category_create(CreateAPIView):
-    queryset = Category.objects.all() # Specify the serializer class
+class Category_create(CreateAPIView): 
+    queryset = Category.objects.all()
     serializer_class = CategorySerializer
     
 class Category_list(ListAPIView):
