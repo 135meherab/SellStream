@@ -6,7 +6,7 @@ from .views import ProductAdd, order_create,order_list,Customer_create,Customer_
 
 
 router = DefaultRouter()
-router.register('product',ProductAdd)
+router.register('add/product',ProductAdd)
 
 urlpatterns = [
     path('',include(router.urls)),
@@ -19,4 +19,6 @@ urlpatterns = [
     path('uom/list/', Uom_list.as_view(), name='uom-list'),
     path('category/', Category_create.as_view(), name='category-create'),
     path('category/list/', Category_list.as_view(), name='category-list'),
+    path('category/list/?customer_id=<int:pk>/', Category_list.as_view(), name='category-list'),
+    # path('customer/<int:customer_id>/orders/', CustomerOrderHistoryAPIView.as_view(), name='customer_order_history_api'),
 ]
