@@ -3,15 +3,11 @@ from django.db import models
 # Create your models here.
 class Category(models.Model):
     name = models.CharField(max_length=80)
-    slug = models.SlugField()
-
-
-class Uom(models.Model):
-    name = models.CharField(max_length=80)
-
 
     def __str__(self):
         return self.name
+
+
 
 class Uom(models.Model):
     name = models.CharField(max_length=80)
@@ -21,12 +17,12 @@ class Uom(models.Model):
 
 class Customer(models.Model):
     name = models.CharField(max_length=30)
-    phone_no = models.IntegerField()
+    phone_no = models.IntegerField(unique=True)
     total_spent = models.DecimalField(max_digits=6, decimal_places=2)
     
 
     def __str__(self):
-        return self.name
+        return self.phone_no
 
 class Product(models.Model):
     category = models.ForeignKey(Category,on_delete=models.CASCADE)

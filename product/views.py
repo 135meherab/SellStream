@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import viewsets
@@ -12,8 +12,51 @@ from .serializers import CategorySerializer,CustomerSerializer,UomSerializers,Pr
 class ProductAdd(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+        
+class Uom_create(CreateAPIView):
+    queryset = Category.objects.all() # Specify the serializer class
+    serializer_class = UomSerializers
+    
+class Uom_list(ListAPIView):
+    queryset = Uom.objects.all()
+    serializer_class = UomSerializers
+    
+class Category_create(CreateAPIView):
+    queryset = Category.objects.all() # Specify the serializer class
+    serializer_class = CategorySerializer
+    
+class Category_list(ListAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    
 
-class order_create(CreateAPIView):
+class Customer_create(CreateAPIView):
+    serializer_class = CustomerSerializer  # Specify the serializer class
+    
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid()
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    
+    
+class Customer_list(ListAPIView):
+    queryset = Customer.objects.all()  # Specify the queryset to fetch all customers
+    serializer_class = CustomerSerializer  # Specify the serializer class for serialization
+
+   
+class CustomerDelete(APIView):
+    def delete(self, request, pk):
+        try:
+            customer = get_object_or_404(Customer, pk=pk)
+            customer.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Customer.DoesNotExist:
+            return Response({"error": "Customer does not exist."}, status=status.HTTP_404_NOT_FOUND)
+
+class Order_create(CreateAPIView):
     serializer_class = OrderSerializer    # Specify the serializer class
 
     def get_queryset(self):
@@ -28,7 +71,7 @@ class order_create(CreateAPIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     
-class order_list(ListAPIView):
+class Order_list(ListAPIView):
     queryset = Order.objects.all()  # Specify the queryset to fetch all customers
     serializer_class = OrderSerializer  # Specify the serializer class for serialization
 
@@ -39,56 +82,14 @@ class order_list(ListAPIView):
             queryset = queryset.filter(customer_id=customer_id)
         return queryset
     
-class Customer_create(CreateAPIView):
-    serializer_class = CustomerSerializer  # Specify the serializer class
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid()
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
     
-class Customer_list(ListAPIView):
-    queryset = Customer.objects.all()  # Specify the queryset to fetch all customers
-    serializer_class = CustomerSerializer  # Specify the serializer class for serialization
-    
-class CustomerDelete(APIView):
-    def delete(self, request, pk):
-        try:
-            customer = Customer.objects.get(pk=pk)
-            customer.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        except Customer.DoesNotExist:
-            return Response({"error": "Customer does not exist."}, status=status.HTTP_404_NOT_FOUND)
 
 
 
 
-class Uom_create(CreateAPIView):
-    serializer_class = UomSerializers  # Specify the serializer class
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-    
-class Uom_list(ListAPIView):
-    queryset = Uom.objects.all()
-    serializer_class = UomSerializers
-    
-class Category_create(CreateAPIView):
-    serializer_class = CategorySerializer  # Specify the serializer class
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-    
-class Category_list(ListAPIView):
-    queryset = Category.objects.all()
-    serializer_class = CategorySerializer
+
+
 
 
 
