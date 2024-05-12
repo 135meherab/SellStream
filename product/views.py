@@ -15,6 +15,11 @@ class ProductAdd(viewsets.ModelViewSet):
 
 class order_create(CreateAPIView):
     serializer_class = OrderSerializer    # Specify the serializer class
+
+    def get_queryset(self):
+        # This method should return the queryset that the view will operate on
+        return Order.objects.all() 
+    
     def create(self,request,*args,**kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid()
@@ -26,6 +31,13 @@ class order_create(CreateAPIView):
 class order_list(ListAPIView):
     queryset = Order.objects.all()  # Specify the queryset to fetch all customers
     serializer_class = OrderSerializer  # Specify the serializer class for serialization
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        customer_id = self.request.query_params.get('customer_id')
+        if customer_id:
+            queryset = queryset.filter(customer_id=customer_id)
+        return queryset
     
 class Customer_create(CreateAPIView):
     serializer_class = CustomerSerializer  # Specify the serializer class
@@ -48,7 +60,9 @@ class CustomerDelete(APIView):
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Customer.DoesNotExist:
             return Response({"error": "Customer does not exist."}, status=status.HTTP_404_NOT_FOUND)
-        
+
+
+
 
 class Uom_create(CreateAPIView):
     serializer_class = UomSerializers  # Specify the serializer class
@@ -75,3 +89,15 @@ class Category_create(CreateAPIView):
 class Category_list(ListAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+
+
+
+# class CustomerOrderHistoryAPIView(ListAPIView):
+#     serializer_class = OrderSerializer
+#     def get_queryset(self):
+#         customer_id = self.kwargs['customer_id']
+#         try:
+#             customer = Customer.objects.get(pk=customer_id)
+#             return Order.objects.filter(customer=customer)
+#         except Customer.DoesNotExist:
+#             return []

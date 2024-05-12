@@ -22,6 +22,7 @@ class Uom(models.Model):
 class Customer(models.Model):
     name = models.CharField(max_length=30)
     phone_no = models.IntegerField(max_length=12)
+    
 
     def __str__(self):
         return self.name
@@ -42,12 +43,6 @@ class Product(models.Model):
 class Order(models.Model):
     product_order = models.ForeignKey(Product, on_delete=models.CASCADE)
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
-
-    date = models.DateTimeField(auto_now=True)
-    quantity = models.DecimalField(max_digits=6, decimal_places=2)
-    Total = models.DecimalField(max_digits=6, decimal_places=2)
-
-
     datetime = models.DateTimeField(auto_now=True)
     quantity = models.DecimalField(max_digits=6, decimal_places=2)
     Total = models.DecimalField(max_digits=6, decimal_places=2)
