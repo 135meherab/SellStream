@@ -1,11 +1,8 @@
 from rest_framework import serializers
 from django.utils.text import slugify 
-from .models import Category,Customer,Uom,Product, Order
+from .models import Customer,Uom,Product, Order
 
-class CategorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Category
-        fields = '__all__'
+
 
 
 class CustomerSerializer(serializers.ModelSerializer):
@@ -18,7 +15,7 @@ class UomSerializers(serializers.ModelSerializer):
         model = Uom
         fields = '__all__'
 
-class ProductSerializer(serializers.ModelSerializer):
+class ProductSerializers(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = '__all__'
