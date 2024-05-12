@@ -9,7 +9,7 @@ from .models import Category,Customer,Uom,Product, Order
 from .serializers import CategorySerializer,CustomerSerializer,UomSerializers,ProductSerializer,OrderSerializer
 # Create your views here.
 
-class ProductAdd(viewsets.ModelViewSet):
+class Product(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
         
