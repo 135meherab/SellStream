@@ -6,7 +6,7 @@ from .views import ProductAdd, order_create,order_list,Customer_create,Customer_
 
 
 router = DefaultRouter()
-router.register('add/product',ProductAdd)
+router.register('add',ProductAdd)
 
 urlpatterns = [
     path('',include(router.urls)),
