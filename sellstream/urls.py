@@ -32,6 +32,7 @@ urlpatterns = [
     # product
 
     path('product/',include('product.urls')),
+    path('category/',include('category.urls')),
     # admin dashboard
     path('dashboard/',include('admin_dashboard.urls')),
 
