@@ -3,10 +3,11 @@ from django.db import models
 # Create your models here.
 class Category(models.Model):
     name = models.CharField(max_length=80)
-    slug = models.SlugField()
 
     def __str__(self):
         return self.name
+
+
 
 class Uom(models.Model):
     name = models.CharField(max_length=80)
@@ -16,19 +17,22 @@ class Uom(models.Model):
 
 class Customer(models.Model):
     name = models.CharField(max_length=30)
-    phone_no = models.IntegerField(max_length=12)
+    phone_no = models.IntegerField(unique=True)
+    total_spent = models.DecimalField(max_digits=6, decimal_places=2)
+    
 
     def __str__(self):
-        return self.name
+        return self.phone_no
 
 class Product(models.Model):
+    category = models.ForeignKey(Category,on_delete=models.CASCADE)
+    uom_name = models.ForeignKey(Uom,on_delete=models.CASCADE)
     name = models.CharField(max_length=80)
     description = models.TextField()
     product_code = models.CharField(max_length=30)
     quantity = models.DecimalField(max_digits=4, decimal_places=2)
     price = models.DecimalField(max_digits=6, decimal_places=2)
-    category = models.ForeignKey(Category,on_delete=models.CASCADE)
-    uom_name = models.ForeignKey(Uom,on_delete=models.CASCADE)
+    date = models.DateTimeField(auto_now=True)
     
     def __str__(self):
         return self.name
@@ -37,12 +41,6 @@ class Product(models.Model):
 class Order(models.Model):
     product_order = models.ForeignKey(Product, on_delete=models.CASCADE)
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
-
-    date = models.DateTimeField(auto_now=True)
-    quantity = models.DecimalField(max_digits=6, decimal_places=2)
-    Total = models.DecimalField(max_digits=6, decimal_places=2)
-
-
     datetime = models.DateTimeField(auto_now=True)
     quantity = models.DecimalField(max_digits=6, decimal_places=2)
     Total = models.DecimalField(max_digits=6, decimal_places=2)
