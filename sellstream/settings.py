@@ -15,6 +15,7 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
+DEBUG=True
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -30,6 +31,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = os.getenv('DEBUG')
 # ALLOWED_HOSTS = ['.vercel.app', '.now.sh']
 ALLOWED_HOSTS = ['*']
+CORS_ALLOWED_ORIGINS=['http://127.0.0.1:8000', 'http://127.0.0.1:5500', 'http://127.0.0.1:3000', 'http://localhost:8000', 'https://sellstream.vercel.app', 'http://127.0.0.1:5173', 'http://localhost:5173']
 #ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split(',')
 
 # For Custom Admin user 
