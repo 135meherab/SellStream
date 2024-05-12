@@ -7,20 +7,6 @@ class CategorySerializer(serializers.ModelSerializer):
         model = Category
         fields = '__all__'
 
-        fields = ['id','name']
-
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        if 'name' in data and 'slug' not in data:
-            data['slug'] = slugify(data['name'])
-        return data
-    def create(self, validated_data):
-        # Generate the slug from the name
-        name = validated_data.get('name')
-        if name:
-            validated_data['slug'] = slugify(name)
-        return super().create(validated_data)
-
 
 class CustomerSerializer(serializers.ModelSerializer):
     class Meta:
@@ -36,6 +22,13 @@ class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = '__all__'
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['category'] = instance.category.name
+        data['uom_name'] = instance.uom_name.name
+        
+        return data
 
 class OrderSerializer(serializers.ModelSerializer):
     class Meta:

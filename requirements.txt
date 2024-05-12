@@ -1,3 +1,4 @@
+psycopg2
 asgiref
 certifi
 charset-normalizer
@@ -5,20 +6,13 @@ coreapi
 coreschema
 Django
 django-cors-headers
-django-filter
 django-rest-swagger
 djangorestframework
+dj_database_url
 drf-yasg
-idna
-inflection
-itypes
-Jinja2
-Markdown
-MarkupSafe
 openapi-codec
 packaging
-pillow
-pip
+Pillow
 python-dotenv
 pytz
 PyYAML
