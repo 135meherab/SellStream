@@ -32,8 +32,6 @@ urlpatterns = [
     # product
     path('product/',include('product.urls')),
     
-    # dashboard
-    path('dashboard/',include('dashboard.urls')),
 ]
 
 
