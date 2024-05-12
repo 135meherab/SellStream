@@ -8,6 +8,7 @@ Django
 django-cors-headers
 django-rest-swagger
 djangorestframework
+dj_database_url
 drf-yasg
 openapi-codec
 packaging
