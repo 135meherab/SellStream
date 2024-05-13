@@ -9,7 +9,7 @@ from .models import Category, Customer, Product, Order
 
 
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ['name','description','product_code','quantity','price','category']
+    list_display = ['name','description','product_code','quantity','price','category','uom_name']
 
 class OrderAdmin(admin.ModelAdmin):
     list_display = ['product_order','customer','quantity','Total','datetime']
