@@ -6,7 +6,7 @@ class EmployeeDetailsModel(models.Model):
     last_name = models.CharField(max_length=50)
     email = models.EmailField(unique=True)
     phone = models.CharField(max_length=15, unique=True)
-    photo = models.ImageField()
+    photo = models.ImageField(upload_to='employee/media/%Y/%m/%d/', blank=True, null=True)
 
     def __str__(self):
         return self.first_name + " " + self.last_name
