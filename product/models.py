@@ -8,7 +8,6 @@ class Category(models.Model):
         return self.name
 
 
-
 class Uom(models.Model):
     name = models.CharField(max_length=80)
 
