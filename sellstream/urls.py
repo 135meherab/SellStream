@@ -25,6 +25,9 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('doc/', schema_view.with_ui('swagger', cache_timeout=0,), name='schema-swagger-ui'),
+    path('employee/', include('employee.urls')),
+    path('product/', include('product.urls')),
+    path('shop/', include('shop.urls')),
 ]
 
 
