@@ -38,8 +38,6 @@ CORS_ALLOWED_ORIGINS = [
 
 CSRF_TRUSTED_ORIGINS = ['http://localhost:5173', 'http://127.0.0.1:5173', 'https://sellstream.onrender.com']
 
-# For Custom Admin user 
-AUTH_USER_MODEL = 'administration.AdminUser'
 
 # Application definition
 
@@ -54,12 +52,7 @@ INSTALLED_APPS = [
     'rest_framework_swagger',
     'drf_yasg',
     'corsheaders',
-    'administration',
-    'employee',
-    'product',
-    'category',
-    'mesurement',
-    'admin_dashboard',
+    
 ]
 
 MIDDLEWARE = [
