@@ -3,7 +3,7 @@ from django.contrib import admin
 
 # Register your models here.
 
-from .models import Category, Uom, Customer, Product, Order
+from .models import Category, Customer, Product, Order
 
 # Register your models here.
 
@@ -19,9 +19,7 @@ class CustomerAdmin(admin.ModelAdmin):
 
 
 
-admin.site.register(Category)
 admin.site.register(Product,ProductAdmin)
 admin.site.register(Order,OrderAdmin)
-admin.site.register(Uom)
 admin.site.register(Customer,CustomerAdmin)
 

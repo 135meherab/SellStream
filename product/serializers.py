@@ -1,8 +1,6 @@
 from rest_framework import serializers
 from django.utils.text import slugify 
-from .models import Customer,Uom,Product, Order
-
-
+from .models import Customer,Product, Order
 
 
 class CustomerSerializer(serializers.ModelSerializer):
@@ -10,10 +8,7 @@ class CustomerSerializer(serializers.ModelSerializer):
         model = Customer
         fields = '__all__'
 
-class UomSerializers(serializers.ModelSerializer):
-    class Meta:
-        model = Uom
-        fields = '__all__'
+
 
 class ProductSerializers(serializers.ModelSerializer):
     class Meta:
