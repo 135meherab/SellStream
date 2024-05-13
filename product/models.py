@@ -2,20 +2,6 @@ from django.db import models
 from category.models import Category
 from mesurement.models import Mesurement
 
-# Create your models here.
-class Category(models.Model):
-    name = models.CharField(max_length=80)
-
-    def __str__(self):
-        return self.name
-
-
-class Uom(models.Model):
-    name = models.CharField(max_length=80)
-
-    def __str__(self):
-        return self.name
-
 
 class Customer(models.Model):
     name = models.CharField(max_length=30)
@@ -28,6 +14,7 @@ class Customer(models.Model):
 
 class Product(models.Model):
     category = models.ForeignKey(Category,on_delete=models.CASCADE)
+    uom_name = models.ForeignKey(Mesurement,on_delete=models.CASCADE)
     name = models.CharField(max_length=80)
     description = models.TextField()
     product_code = models.CharField(max_length=30)
