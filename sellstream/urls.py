@@ -30,17 +30,13 @@ urlpatterns = [
     # Employee
     path('ep/', include('employee.urls')),
     # product
-
     path('product/',include('product.urls')),
     path('category/',include('category.urls')),
     path('measurement/',include('mesurement.urls')),
     # admin dashboard
     path('dashboard/',include('admin_dashboard.urls')),
-
-
-    
 ]
 
 
-# urlpatterns += static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
+urlpatterns += static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
 # urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
