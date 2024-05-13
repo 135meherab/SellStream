@@ -6,11 +6,17 @@ from rest_framework.views import APIView
 from .models import Category
 from .serializers import CategorySerializers
 from rest_framework import viewsets 
+from rest_framework.generics import ListAPIView
+
 
 # Create your views here.
 
 # Create your views here.
 class CreateCategory(viewsets.ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializers
+
+class CategoryList(ListAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializers
 
