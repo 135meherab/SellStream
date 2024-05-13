@@ -12,7 +12,7 @@ from .serializers import CategorySerializer,CustomerSerializer,UomSerializers,Pr
 class Product(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-        
+    
 class Uom_create(CreateAPIView):
     queryset = Category.objects.all() # Specify the serializer class
     serializer_class = UomSerializers
