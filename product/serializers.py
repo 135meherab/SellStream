@@ -2,7 +2,6 @@ from rest_framework import serializers
 from django.utils.text import slugify 
 from .models import Customer,Product, Order
 
-
 class CustomerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customer

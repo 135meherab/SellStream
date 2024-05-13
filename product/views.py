@@ -21,6 +21,7 @@ class ProductList(ListAPIView):
 # class Uom_create(CreateAPIView):
 #     queryset = Uom.objects.all() # Specify the serializer class
 #     serializer_class = UomSerializers
+
     
 # class Uom_list(ListAPIView):
 #     queryset = Uom.objects.all()
