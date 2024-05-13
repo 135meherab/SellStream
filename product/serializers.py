@@ -1,26 +1,25 @@
 from rest_framework import serializers
 from django.utils.text import slugify 
-from .models import Category,Customer,Uom,Product, Order
-
-class CategorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Category
-        fields = '__all__'
+from .models import Customer,Product, Order
 
 class CustomerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customer
         fields = '__all__'
 
-class UomSerializers(serializers.ModelSerializer):
-    class Meta:
-        model = Uom
-        fields = '__all__'
 
-class ProductSerializer(serializers.ModelSerializer):
+
+class ProductSerializers(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = '__all__'
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['category'] = instance.category.name
+        data['uom_name'] = instance.uom_name.name
+        
+        return data
 
 class OrderSerializer(serializers.ModelSerializer):
     class Meta:

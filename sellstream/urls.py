@@ -30,9 +30,14 @@ urlpatterns = [
     # Employee
     path('ep/', include('employee.urls')),
     # product
+
     path('product/',include('product.urls')),
+    path('category/',include('category.urls')),
+    path('measurement/',include('mesurement.urls')),
     # admin dashboard
     path('dashboard/',include('admin_dashboard.urls')),
+
+
     
 ]
 

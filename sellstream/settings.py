@@ -13,7 +13,6 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv
-import dj_database_url
 
 load_dotenv()
 
@@ -32,7 +31,11 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG=True
 # ALLOWED_HOSTS = ['.vercel.app', '.now.sh']
 ALLOWED_HOSTS = ['*']
+
 CORS_ALLOWED_ORIGINS=['http://127.0.0.1:8000', 'http://127.0.0.1:5500', 'http://127.0.0.1:3000', 'http://localhost:8000', 'https://sellstream.onrender.com', 'http://127.0.0.1:5173', 'http://localhost:5173', ]
+
+CORS_ALLOWED_ORIGINS=['https://sellstream.onrender.com','http://*.127.0.0.1:8000', 'http://localhost:5173']
+
 #ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split(',')
 
 CSRF_TRUSTED_ORIGINS = ['http://localhost:5173', 'http://127.0.0.1:5173', 'https://sellstream.onrender.com']
@@ -56,6 +59,8 @@ INSTALLED_APPS = [
     'administration',
     'employee',
     'product',
+    'category',
+    'mesurement',
     'admin_dashboard',
 ]
 
