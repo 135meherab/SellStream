@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'employee',
     'product',
     'category',
+    'mesurement',
     'admin_dashboard',
 ]
 
