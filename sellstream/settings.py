@@ -101,6 +101,24 @@ DATABASES = {
     }
 }
 
+# DATABASES = {
+#     'default': {
+#         "ENGINE": "django.db.backends.postgresql",
+#         "NAME": os.getenv("POSTGRES_DATABASE"),
+#         "USER": os.getenv('POSTGRES_USER'),
+#         "PASSWORD": os.getenv('POSTGRES_PASSWORD'),
+#         "HOST": os.getenv("POSTGRES_HOST"),
+#         "PORT": os.getenv("POSTGRES_PORT"),
+#     }
+# }
+
+# DATABASES['default'] = dj_database_url.config(
+#     default='postgresql://postgres:PmiVdWbYUBrJxXHILnwdHXIkhFzYgptr@monorail.proxy.rlwy.net:57866/railway',
+#     conn_max_age=600,
+#     conn_health_checks=True,
+# )
+
+
 SWAGGER_SETTINGS = {
     'SECURITY_DEFINITIONS': {
         'basic': {

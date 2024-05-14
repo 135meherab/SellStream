@@ -84,7 +84,7 @@ class EmailVerificationView(View):
         else:
             messages.error(request, 'Email verification failed.')
         return redirect('Login')
-
+ 
 
 class UserLogin(APIView):
     def post(self,request):
