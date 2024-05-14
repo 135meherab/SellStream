@@ -112,6 +112,13 @@ DATABASES = {
 #     }
 # }
 
+# DATABASES['default'] = dj_database_url.config(
+#     default='postgresql://postgres:PmiVdWbYUBrJxXHILnwdHXIkhFzYgptr@monorail.proxy.rlwy.net:57866/railway',
+#     conn_max_age=600,
+#     conn_health_checks=True,
+# )
+
+
 SWAGGER_SETTINGS = {
     'SECURITY_DEFINITIONS': {
         'basic': {
