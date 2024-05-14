@@ -6,9 +6,11 @@ from . import views
 
 router = DefaultRouter()
 router.register('',views.CreateProduct)
+
 urlpatterns = [
     path('', include(router.urls)), 
-    path('list/', views.ProductList.as_view())
+    path('list/', views.ProductList.as_view()),
+    
     
 ]
 
