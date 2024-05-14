@@ -24,19 +24,12 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', schema_view.with_ui('swagger', cache_timeout=0,), name='schema-swagger-ui'),
-    # Admin login, logout, profile
-    path('ad/', include('administration.urls')),
-    # Employee
-    path('ep/', include('employee.urls')),
-    # product
-    path('product/',include('product.urls')),
-    path('category/',include('category.urls')),
-    path('measurement/',include('mesurement.urls')),
-    # admin dashboard
-    path('dashboard/',include('admin_dashboard.urls')),
+    path('doc/', schema_view.with_ui('swagger', cache_timeout=0,), name='schema-swagger-ui'),
+    path('employee/', include('employee.urls')),
+    path('product/', include('product.urls')),
+    path('shop/', include('shop.urls')),
 ]
 
 
 urlpatterns += static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
-# urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+

@@ -1,66 +1,48 @@
 from rest_framework import serializers
-from django.utils.text import slugify 
-from .models import Customer,Product, Order
+from .models import Category, Product, Customer, Order
+
+class CategorySerializer(serializers.ModelSerializer):
+      class Meta:
+            model = Category
+            fields = '__all__'
+
+
+class ProductSerializer(serializers.ModelSerializer):
+      class Meta:
+            model = Product
+            exclude = ['product_code']
+            
+      def to_representation(self, instance):
+            data = super().to_representation(instance)
+            request = self.context.get('request')  # check the requested method
+            
+            if request and request.method == 'GET':
+                  data['product_code'] = instance.product_code
+                  data['branch_name'] = instance.branch.name if instance.branch else None
+                  data['category_name'] = instance.category.name if instance.category else None
+            
+            return data
+      
+      def get_branch_name(self, obj):
+            return obj.branch.name if obj.branch else None
+      
+      def get_category_name(self, obj):
+            return obj.category.name if obj.category else None
+
 
 
 class CustomerSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Customer
-        fields = '__all__'
+      class Meta:
+            model = Customer
+            fields = '__all__'
 
+      def save(self, **kwargs):
+            validated_data = dict(self.validated_data)
+            instance = Customer.objects.create(**validated_data)
+            return instance
 
-
-class ProductSerializers(serializers.ModelSerializer):
-    class Meta:
-        model = Product
-        fields = '__all__'
-
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        data['category'] = instance.category.name
-        data['uom_name'] = instance.uom_name.name
-        
-        return data
 
 class OrderSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Order
-        fields = '__all__'
-        fields = ['id','product_order','customer','quantity']
-
-    def create(self, validated_data):
-        product_order = validated_data['product_order']
-        order_quantity = validated_data['quantity']
-        price = product_order.price
-        available_quantity = product_order.quantity
-
-        # Check if the order quantity exceeds the available quantity
-        if order_quantity > available_quantity:
-            raise serializers.ValidationError("Order quantity exceeds available quantity.")
-        
-        # Update the quantity of the ordered product
-        product_order.quantity -= order_quantity
-        product_order.save()
-
-         # Calculate total price
-        total = order_quantity * price
-        validated_data['Total'] = total
-
-        # Create the order
-        return super().create(validated_data)
-    
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        
-        # Calculate Total dynamically and add it to the serialized data
-        total = instance.quantity * instance.product_order.price
-        data['Total'] = total
-        
-        return data
-    
-
-# class OrderDetailsSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Order_Details
-#         fields = '__all__'
-
+      class Meta:
+            model = Order
+            fields = '__all__'

@@ -1,108 +1,67 @@
-from django.shortcuts import render, get_object_or_404
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework import viewsets
-from rest_framework.views import APIView
-from rest_framework.generics import CreateAPIView
-from rest_framework.generics import ListAPIView
-from .models import Category,Customer,Product, Order
-from .serializers import CustomerSerializer,ProductSerializers,OrderSerializer
-from rest_framework.viewsets import ModelViewSet
+from django.shortcuts import render
+from decimal import Decimal
+from rest_framework import viewsets, generics, status, response, views
+from .models import Category, Product, Customer, Order
+from .serializers import CategorySerializer, ProductSerializer, CustomerSerializer, OrderSerializer
+
+
 # Create your views here.
 
-class CreateProduct(viewsets.ModelViewSet):
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializers
+class CategoryAPIView(viewsets.ModelViewSet):
+      queryset = Category.objects.all()
+      serializer_class = CategorySerializer
+      
+      
+class ProductAPIView(viewsets.ModelViewSet):
+      queryset = Product.objects.all()
+      serializer_class = ProductSerializer
 
-class ProductList(ListAPIView):
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializers
 
-# class Uom_create(CreateAPIView):
-#     queryset = Uom.objects.all() # Specify the serializer class
-#     serializer_class = UomSerializers
-    
-# class Uom_list(ListAPIView):
-#     queryset = Uom.objects.all()
-#     serializer_class = UomSerializers
-    
-# class Category_create(ModelViewSet): 
-#     queryset = Category.objects.all()
-#     serializer_class = CategorySerializer
-    
-# class Category_list(ListAPIView):
-#     queryset = Category.objects.all()
-    
+class OrderCreateAPIView(views.APIView):      # use api view for the custom method
+      def post(self, request, *args, **kwargs):
+            print("request data: ", request.data)
+            customer_serializer = CustomerSerializer(data=request.data['customer'])
+            order_serializer = OrderSerializer(data=request.data.get('order'))
+            
+            customer_valid = customer_serializer.is_valid()
+            order_valid = False
+            
 
-# class Customer_create(CreateAPIView):
-#     serializer_class = CustomerSerializer  # Specify the serializer class
-    
-    
-#     def create(self, request, *args, **kwargs):
-#         serializer = self.get_serializer(data=request.data)
-#         serializer.is_valid()
-#         self.perform_create(serializer)
-#         headers = self.get_success_headers(serializer.data)
-#         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-    
-    
-# class Customer_list(ListAPIView):
-#     queryset = Customer.objects.all()  # Specify the queryset to fetch all customers
-#     serializer_class = CustomerSerializer  # Specify the serializer class for serialization
+            if customer_valid:
+                  customer_instance = customer_serializer.save()  # save the customer data
 
-   
-# class CustomerDelete(APIView):
-#     def delete(self, request, pk):
-#         try:
-#             customer = get_object_or_404(Customer, pk=pk)
-#             customer.delete()
-#             return Response(status=status.HTTP_204_NO_CONTENT)
-#         except Customer.DoesNotExist:
-#             return Response({"error": "Customer does not exist."}, status=status.HTTP_404_NOT_FOUND)
+                  order_data = request.data.get("order", {})
+                  order_data["customer"] = customer_instance.id
+                  
+                  print("order data: ", order_data)
 
-# class Order_create(CreateAPIView):
-#     serializer_class = OrderSerializer    # Specify the serializer class
+                  order_serializer = OrderSerializer(data=order_data)
+                  order_valid = order_serializer.is_valid()
 
-#     def get_queryset(self):
-#         # This method should return the queryset that the view will operate on
-#         return Order.objects.all() 
-    
-#     def create(self,request,*args,**kwargs):
-#         serializer = self.get_serializer(data=request.data)
-#         serializer.is_valid()
-#         self.perform_create(serializer)
-#         headers = self.get_success_headers(serializer.data)
-#         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+            if customer_valid and order_valid:
+                  order_instance = order_serializer.save()
+                  
+                  # convert total price into decimal
+                  total_price_decimal = Decimal(order_instance.total_price)
 
-    
-# class Order_list(ListAPIView):
-#     queryset = Order.objects.all()  # Specify the queryset to fetch all customers
-#     serializer_class = OrderSerializer  # Specify the serializer class for serialization
+                  # update the total purchase
+                  customer_instance.total_purchase += total_price_decimal
+                  customer_instance.save()
 
-#     def get_queryset(self):
-#         queryset = super().get_queryset()
-#         customer_id = self.request.query_params.get('customer_id')
-#         if customer_id:
-#             queryset = queryset.filter(customer_id=customer_id)
-#         return queryset
-    
+                  return response.Response(order_serializer.data, status=status.HTTP_201_CREATED)
 
-    
+            errors = {}
+            if not customer_serializer.is_valid():
+                  errors.update(customer_serializer.errors)
+            if not order_serializer.is_valid():
+                  errors.update(order_serializer.errors)
+            return response.Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 
+      def get(self, request, *args, **kwargs):
+            order_queryset = Order.objects.all()
+            order_serializer = OrderSerializer(order_queryset, many=True)
+            return response.Response(order_serializer.data, status=status.HTTP_200_OK)
 
 
-
-
-
-
-# class CustomerOrderHistoryAPIView(ListAPIView):
-#     serializer_class = OrderSerializer
-#     def get_queryset(self):
-#         customer_id = self.kwargs['customer_id']
-#         try:
-#             customer = Customer.objects.get(pk=customer_id)
-#             return Order.objects.filter(customer=customer)
-#         except Customer.DoesNotExist:
-#             return []
