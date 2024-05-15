@@ -10,7 +10,6 @@ class CategorySerializer(serializers.ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
       class Meta:
             model = Product
-            exclude = ['product_code']
             
       def to_representation(self, instance):
             data = super().to_representation(instance)

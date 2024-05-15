@@ -34,8 +34,7 @@ class OrderListAPIView(generics.ListCreateAPIView):
 # use api view for the custom method
 class OrderCreateAPIView(views.APIView):  
       permission_classes = [permissions.IsAuthenticated]
-      
-      
+          
       def post(self, request, *args, **kwargs):
             print("request data: ", request.data)
             customer_data = request.data.get('customer', {})
