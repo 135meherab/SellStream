@@ -23,6 +23,7 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.models import Token
 from rest_framework.generics import CreateAPIView, ListAPIView,UpdateAPIView
 from rest_framework import viewsets
+from datetime import datetime, timedelta
 
 class ShopCreateView(CreateAPIView):
     queryset = Shop.objects.all()
@@ -95,9 +96,11 @@ class UserLogin(APIView):
 
             user = authenticate(username = username, password = password)
             if user:
+                logout_time = datetime.now() + timedelta(minutes=30)
                 token, created = Token.objects.get_or_create(user = user)
                 login(request,user)
-                return Response({'token' : token.key, 'user_id': user.id})    
+                request.session['logout_time'] = logout_time.strftime('%Y-%m-%d %H:%M:%S')
+                return Response({'token' : token.key, 'user_id': user.id, 'logout_time' : logout_time})    
             else:
                 return Response({'error': "Invalid Creadential"})
             
