@@ -94,25 +94,33 @@ WSGI_APPLICATION = 'sellstream.wsgi.app'
 
 
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+# Replace the SQLite DATABASES configuration with PostgreSQL:
+# DATABASES = {
+#     'default': dj_database_url.config(
+#         # Replace this value with your local database's connection string.
+#         default='postgresql://postgres:root@localhost:5432/sell-stream-db',
+#         conn_max_age=600
+#     )
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": os.getenv("POSTGRES_DATABASE"),
+        "USER": os.getenv('POSTGRES_USER'),
+        "PASSWORD": os.getenv('POSTGRES_PASSWORD'),
+        "HOST": os.getenv("POSTGRES_HOST"),
+        "PORT": os.getenv("POSTGRES_PORT"),
     }
 }
 
-# DATABASES = {
-#     'default': {
-#         "ENGINE": "django.db.backends.postgresql",
-#         "NAME": os.getenv("POSTGRES_DATABASE"),
-#         "USER": os.getenv('POSTGRES_USER'),
-#         "PASSWORD": os.getenv('POSTGRES_PASSWORD'),
-#         "HOST": os.getenv("POSTGRES_HOST"),
-#         "PORT": os.getenv("POSTGRES_PORT"),
-#     }
-# }
-
-# DATABASES['default'] = dj_database_url.config(
+# DATABASES= dj_database_url.config(
 #     default='postgresql://postgres:PmiVdWbYUBrJxXHILnwdHXIkhFzYgptr@monorail.proxy.rlwy.net:57866/railway',
 #     conn_max_age=600,
 #     conn_health_checks=True,
