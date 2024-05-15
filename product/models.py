@@ -69,19 +69,5 @@ class Order(models.Model):
       def __str__(self):
             return self.order_unique_id
 
-      # # starting to store list of products data
-      # products_json = models.TextField(default="[]", blank=False)
-
-      # def get_products(self):
-      #       return json.loads(self.products_json)
-
-      # def set_products(self, products):
-      #       self.products_json = json.dumps(products)
-
-      # # ending to store list of products data
-
-
-      # products = models.property(get_products, set_products)   #store a list of products
-
 
 
