@@ -9,7 +9,8 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.views import View
-from .serializers import CustomUserCreationSerializer, LoginSerializer,DetailsSerializer,PasswordChangeSerializer,UserUpdateSerializer
+from .serializers import CustomUserCreationSerializer, LoginSerializer,DetailsSerializer,PasswordChangeSerializer,UserUpdateSerializer,ShopSerializer,BranchSerializer
+from .models import Shop,Branch
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
@@ -20,9 +21,32 @@ from django.contrib.auth.views import LoginView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.models import Token
+from rest_framework.generics import CreateAPIView, ListAPIView,UpdateAPIView
+from rest_framework import viewsets
 
+class ShopCreateView(CreateAPIView):
+    queryset = Shop.objects.all()
+    serializer_class = ShopSerializer
 
+class ShopList(ListAPIView):
+    queryset = Shop.objects.all()
+    serializer_class = ShopSerializer
 
+class ShopUpdateView(UpdateAPIView):
+    queryset = Shop.objects.all()
+    serializer_class = ShopSerializer
+
+class BranchCreateView(CreateAPIView):
+    queryset = Branch.objects.all()
+    serializer_class = BranchSerializer
+
+class BranchList(ListAPIView):
+    queryset = Branch.objects.all()
+    serializer_class = BranchSerializer
+    
+class Branchviewset(viewsets.ModelViewSet):
+    queryset = Branch.objects.all()
+    serializer_class = BranchSerializer
 
 
 class RegisterAPIView(APIView):
@@ -33,7 +57,7 @@ class RegisterAPIView(APIView):
             user = user_serializer.save()
             token = default_token_generator.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
-            confirm_link = f"http://127.0.0.1:8000/activate/{uid}/{token}/"
+            confirm_link = f"http://sellstream.onrender.com/activate/{uid}/{token}/"
             email_subject = "Confirm Your mail"
             email_body = render_to_string('confirm_email.html',{'confirm_link' : confirm_link})
             email = EmailMultiAlternatives(email_subject,'',to=[user.email])
@@ -60,8 +84,7 @@ class EmailVerificationView(View):
         else:
             messages.error(request, 'Email verification failed.')
         return redirect('Login')
-
-
+ 
 
 class UserLogin(APIView):
     def post(self,request):
@@ -90,11 +113,12 @@ class UserLogout(APIView):
 class UserDetailView(generics.RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = DetailsSerializer
-    authentication_classes = [TokenAuthentication]  # Use TokenAuthentication
     permission_classes = [IsAuthenticated]
 
 
 class UserUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+    serializers_class = UserUpdateSerializer
     def put(self, request):
         serializer = UserUpdateSerializer(instance=request.user, data=request.data)
         if serializer.is_valid():
@@ -104,6 +128,7 @@ class UserUpdateView(APIView):
 
 
 class PasswordChangeView(APIView):
+    permission_classes = [IsAuthenticated]
     def post(self, request):
         serializer = PasswordChangeSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
@@ -112,3 +137,4 @@ class PasswordChangeView(APIView):
             user.save()
             return Response({'message': 'Password changed successfully.'}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    

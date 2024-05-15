@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
+from .models import Shop,Branch
 
 class CustomUserCreationSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(required = True)
@@ -28,17 +29,30 @@ class CustomUserCreationSerializer(serializers.ModelSerializer):
         return account
     
 
-
-class LoginSerializer(serializers.ModelSerializer):
+class LoginSerializer(serializers.Serializer):
     username = serializers.CharField(max_length = 50)
     password = serializers.CharField(write_only=True)
-
 
 class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['username', 'first_name', 'last_name', 'email']  
-        
+
+class DetailsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User 
+        fields = ['username', 'first_name', 'last_name','email']    
+
+class ShopSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Shop
+        fields = '__all__'
+    
+
+class BranchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Branch
+        fields = '__all__'
 
 class PasswordChangeSerializer(serializers.Serializer):
     old_password = serializers.CharField(required=True)
@@ -57,7 +71,3 @@ class PasswordChangeSerializer(serializers.Serializer):
 
 
 
-class DetailsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User 
-        fields = ['username', 'first_name', 'last_name','email']    
