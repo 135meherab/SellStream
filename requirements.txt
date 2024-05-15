@@ -23,4 +23,3 @@ sqlparse
 tzdata
 uritemplate
 urllib3
-django-environ
