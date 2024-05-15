@@ -32,6 +32,10 @@ class ShopList(ListAPIView):
     queryset = Shop.objects.all()
     serializer_class = ShopSerializer
 
+class ShopUpdateView(UpdateAPIView):
+    queryset = Shop.objects.all()
+    serializer_class = ShopSerializer
+
 class BranchCreateView(CreateAPIView):
     queryset = Branch.objects.all()
     serializer_class = BranchSerializer
@@ -39,10 +43,6 @@ class BranchCreateView(CreateAPIView):
 class BranchList(ListAPIView):
     queryset = Branch.objects.all()
     serializer_class = BranchSerializer
-
-class ShopUpdateView(UpdateAPIView):
-    queryset = Shop.objects.all()
-    serializer_class = ShopSerializer
     
 class Branchviewset(viewsets.ModelViewSet):
     queryset = Branch.objects.all()
