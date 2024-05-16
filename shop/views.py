@@ -27,26 +27,32 @@ from rest_framework import viewsets
 class ShopCreateView(CreateAPIView):
     queryset = Shop.objects.all()
     serializer_class = ShopSerializer
+    permission_classes = [IsAuthenticated]
 
 class ShopList(ListAPIView):
     queryset = Shop.objects.all()
     serializer_class = ShopSerializer
+    permission_classes = [IsAuthenticated]
 
 class ShopUpdateView(UpdateAPIView):
     queryset = Shop.objects.all()
     serializer_class = ShopSerializer
+    permission_classes = [IsAuthenticated]
 
 class BranchCreateView(CreateAPIView):
     queryset = Branch.objects.all()
     serializer_class = BranchSerializer
+    permission_classes = [IsAuthenticated]
 
 class BranchList(ListAPIView):
     queryset = Branch.objects.all()
     serializer_class = BranchSerializer
+    permission_classes = [IsAuthenticated]
     
 class Branchviewset(viewsets.ModelViewSet):
     queryset = Branch.objects.all()
     serializer_class = BranchSerializer
+    permission_classes = [IsAuthenticated]
 
 
 class RegisterAPIView(APIView):
