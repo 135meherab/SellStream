@@ -68,7 +68,7 @@ class RegisterAPIView(APIView):
             # return redirect('login')
             return Response("Check your mail for confirmation")
         return Response(user_serializer.errors)
-          
+        
         
 class EmailVerificationView(View):
     def get(self, request, uid64, token):
@@ -85,7 +85,7 @@ class EmailVerificationView(View):
         else:
             messages.error(request, 'Email verification failed.')
         return redirect('Login')
- 
+
 
 class UserLogin(APIView):
     def post(self,request):
