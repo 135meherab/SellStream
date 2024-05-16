@@ -23,6 +23,7 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.models import Token
 from rest_framework.generics import CreateAPIView, ListAPIView,UpdateAPIView
 from rest_framework import viewsets
+from datetime import datetime, timedelta
 
 class ShopCreateView(CreateAPIView):
     queryset = Shop.objects.all()
@@ -63,7 +64,7 @@ class RegisterAPIView(APIView):
             user = user_serializer.save()
             token = default_token_generator.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
-            confirm_link = f"http://127.0.0.1:8000/shop/activate/{uid}/{token}/"
+            confirm_link = f"http://sellstream.onrender.com/activate/{uid}/{token}/"
             email_subject = "Confirm Your mail"
             email_body = render_to_string('confirm_email.html',{'confirm_link' : confirm_link})
             email = EmailMultiAlternatives(email_subject,'',to=[user.email])
@@ -73,7 +74,7 @@ class RegisterAPIView(APIView):
             # return redirect('login')
             return Response("Check your mail for confirmation")
         return Response(user_serializer.errors)
-          
+        
         
 class EmailVerificationView(View):
     def get(self, request, uid64, token):
@@ -90,7 +91,7 @@ class EmailVerificationView(View):
         else:
             messages.error(request, 'Email verification failed.')
         return redirect('Login')
- 
+
 
 class UserLogin(APIView):
     def post(self,request):
@@ -101,9 +102,11 @@ class UserLogin(APIView):
 
             user = authenticate(username = username, password = password)
             if user:
+                logout_time = datetime.now() + timedelta(minutes=30)
                 token, created = Token.objects.get_or_create(user = user)
                 login(request,user)
-                return Response({'token' : token.key, 'user_id': user.id})    
+                request.session['logout_time'] = logout_time.strftime('%Y-%m-%d %H:%M:%S')
+                return Response({'token' : token.key, 'user_id': user.id, 'logout_time' : logout_time})    
             else:
                 return Response({'error': "Invalid Creadential"})
             
