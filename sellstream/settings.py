@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'product',
     'product_dashboard',
     'shop',
+    'third_party',
 ]
 
 MIDDLEWARE = [
