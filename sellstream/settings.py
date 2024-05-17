@@ -27,15 +27,6 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG=True
 ALLOWED_HOSTS = ['*', 'https://sellstream.onrender.com']
-
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOWED_ORIGINS = [
-    'http://127.0.0.1:8000', 'http://127.0.0.1:5500', 'http://127.0.0.1:3000',
-    'http://localhost:8000', 'https://sellstream.onrender.com',
-    'http://127.0.0.1:5173', 'http://localhost:5173',
-    'https://sellstream.onrender.com', 'http://*.127.0.0.1:8000'
-]
-
 CSRF_TRUSTED_ORIGINS = ['http://localhost:5173', 'http://127.0.0.1:5173', 'https://sellstream.onrender.com']
 
 
@@ -55,6 +46,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'employee',
     'product',
+    'product_dashboard',
     'shop',
 ]
 
@@ -67,6 +59,14 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = [
+    'http://127.0.0.1:8000', 'http://127.0.0.1:5500', 'http://127.0.0.1:3000',
+    'http://localhost:8000', 'https://sellstream.onrender.com',
+    'http://127.0.0.1:5173', 'http://localhost:5173',
+    'https://sellstream.onrender.com', 'http://*.127.0.0.1:8000'
 ]
 
 ROOT_URLCONF = 'sellstream.urls'
@@ -113,12 +113,12 @@ DATABASES = {
     }
 }
 
-# DATABASES = {
-#     'default': dj_database_url.config(
-#         # Replace this value with your local database's connection string.
-#         default='postgresql://postgres:PfTdyVlOHlgmKrWVlGvxICUKOPBpFUaA@roundhouse.proxy.rlwy.net:12820/railway',
-#     )
-# }
+DATABASES = {
+    'default': dj_database_url.config(
+        # Replace this value with your local database's connection string.
+        default='postgresql://postgres:PfTdyVlOHlgmKrWVlGvxICUKOPBpFUaA@roundhouse.proxy.rlwy.net:12820/railway',
+    )
+}
 
 
 SWAGGER_SETTINGS = {
