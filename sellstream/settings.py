@@ -17,6 +17,31 @@ import dj_database_url
 
 load_dotenv()
 
+import firebase_admin
+from firebase_admin import credentials
+
+cred = credentials.Certificate({
+  "type": "service_account",
+  "project_id": os.getenv("GOOGLE_CLOUD_PROJECT_ID"),
+  "private_key_id": os.getenv("GOOGLE_CLOUD_PRIVATE_KEY_ID"),
+  "private_key": os.getenv("GOOGLE_CLOUD_PRIVATE_KEY").replace("\\n", "\n"),
+  "client_email": os.getenv("GOOGLE_CLOUD_CLIENT_EMAIL"),
+  "client_id": os.getenv("GOOGLE_CLOUD_CLIENT_ID"),
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-7xtv0%40selstream.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+})
+firebase_admin.initialize_app(cred)
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'third_party.authentication.FirebaseAuthentication',
+    ),
+}
+
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -48,6 +73,7 @@ INSTALLED_APPS = [
     'product',
     'product_dashboard',
     'shop',
+    'third_party',
 ]
 
 MIDDLEWARE = [
