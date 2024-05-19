@@ -9,7 +9,7 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.views import View
-from .serializers import CustomUserCreationSerializer, LoginSerializer,DetailsSerializer,PasswordChangeSerializer,UserUpdateSerializer,ShopSerializer,BranchSerializer
+from .serializers import CustomUserCreationSerializer, LoginSerializer,DetailsSerializer,PasswordChangeSerializer,UserUpdateSerializer,ShopSerializer,BranchSerializer,UserListSerializer
 from .models import Shop,Branch
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
@@ -25,29 +25,34 @@ from rest_framework.generics import CreateAPIView, ListAPIView,UpdateAPIView
 from rest_framework import viewsets
 from datetime import datetime, timedelta
 
+# create a shop
 class ShopCreateView(CreateAPIView):
     queryset = Shop.objects.all()
     serializer_class = ShopSerializer
+    # permission_classes = [IsAuthenticated]
 
+# get shop list
 class ShopList(ListAPIView):
     queryset = Shop.objects.all()
     serializer_class = ShopSerializer
+    permission_classes = [IsAuthenticated]
 
+#update to shop
 class ShopUpdateView(UpdateAPIView):
     queryset = Shop.objects.all()
     serializer_class = ShopSerializer
+    permission_classes = [IsAuthenticated]
 
-class BranchCreateView(CreateAPIView):
-    queryset = Branch.objects.all()
-    serializer_class = BranchSerializer
+#get all user list
+class UserListView(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserListSerializer
 
-class BranchList(ListAPIView):
-    queryset = Branch.objects.all()
-    serializer_class = BranchSerializer
-    
+# create Branch,get,update,delete
 class Branchviewset(viewsets.ModelViewSet):
     queryset = Branch.objects.all()
     serializer_class = BranchSerializer
+    # permission_classes = [IsAuthenticated]
 
 
 class RegisterAPIView(APIView):
@@ -112,7 +117,8 @@ class UserLogout(APIView):
             return redirect('Login')
         else:
             return Response({'error': 'User is not authenticated.'}, status=status.HTTP_401_UNAUTHORIZED)
-        
+
+#get all user        
 class UserDetailView(generics.RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = DetailsSerializer

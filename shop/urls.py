@@ -1,5 +1,5 @@
 from django.urls import path, include
-from .views import  RegisterAPIView ,EmailVerificationView,UserLogin,UserLogout,UserDetailView,UserUpdateView,PasswordChangeView,ShopCreateView,ShopList,ShopUpdateView,Branchviewset
+from .views import  RegisterAPIView ,EmailVerificationView,UserLogin,UserLogout,UserDetailView,UserUpdateView,PasswordChangeView,ShopCreateView,ShopList,ShopUpdateView,Branchviewset,UserListView
 from rest_framework.routers import DefaultRouter
 
 
@@ -18,5 +18,6 @@ urlpatterns = [
     path('createshop/', ShopCreateView.as_view(), name='shop-create'),
     path('list/', ShopList.as_view(), name='shop-list'),
     path('update/<int:pk>/', ShopUpdateView.as_view(), name='shop-update'),
+    path('users/list', UserListView.as_view(), name='user-list'),
   
 ]
