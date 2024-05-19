@@ -139,12 +139,12 @@ DATABASES = {
     }
 }
 
-DATABASES = {
-    'default': dj_database_url.config(
-        # Replace this value with your local database's connection string.
-        default='postgresql://postgres:PfTdyVlOHlgmKrWVlGvxICUKOPBpFUaA@roundhouse.proxy.rlwy.net:12820/railway',
-    )
-}
+# DATABASES = {
+#     'default': dj_database_url.config(
+#         # Replace this value with your local database's connection string.
+#         default='postgresql://postgres:PfTdyVlOHlgmKrWVlGvxICUKOPBpFUaA@roundhouse.proxy.rlwy.net:12820/railway',
+#     )
+# }
 
 
 SWAGGER_SETTINGS = {
