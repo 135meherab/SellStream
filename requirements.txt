@@ -28,3 +28,4 @@ six
 tzdata
 uritemplate
 urllib3
+firebase-admin
