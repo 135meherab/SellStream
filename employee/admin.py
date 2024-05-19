@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import DesignationModel, EmployeeModel, AttendanceModel, LeaveModel
+from .models import DesignationModel, EmployeeModel, AttendanceModel, LeaveModel, SpecialOccasionModel
 # Register your models here.
 
 
@@ -10,3 +10,5 @@ admin.site.register(EmployeeModel)
 admin.site.register(AttendanceModel)
 
 admin.site.register(LeaveModel)
+
+admin.site.register(SpecialOccasionModel)
