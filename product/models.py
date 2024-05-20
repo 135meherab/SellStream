@@ -1,5 +1,4 @@
 from django.db import models
-import json
 from shop.models import Shop, Branch
 
 # Create your models here.
