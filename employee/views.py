@@ -14,20 +14,20 @@ from rest_framework.response import Response
 class DesignationViews(viewsets.ModelViewSet):
     queryset = DesignationModel.objects.all()
     serializer_class = DesignationSerializers
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
 # Employee
 class EmployeeViews(viewsets.ModelViewSet):
     queryset = EmployeeModel.objects.all()
     serializer_class = EmployeeSerializers
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
 
 # Attendance
 class Attendanceview(GenericAPIView, ListModelMixin, CreateModelMixin):
     queryset = AttendanceModel.objects.all()
     serializer_class = AttendanceSerializers
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
@@ -37,7 +37,7 @@ class Attendanceview(GenericAPIView, ListModelMixin, CreateModelMixin):
 class AttendanceviewRetrive(GenericAPIView, RetrieveModelMixin):
     queryset = AttendanceModel.objects.all()
     serializer_class = AttendanceSerializers
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
@@ -47,7 +47,7 @@ class AttendanceviewRetrive(GenericAPIView, RetrieveModelMixin):
 class Leaveview(GenericAPIView, ListModelMixin, CreateModelMixin):
     queryset = LeaveModel.objects.all()
     serializer_class = LeaveSerializers
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
