@@ -13,17 +13,20 @@ class CategoryAPIView(viewsets.ModelViewSet):
       
       
 class ProductAPIView(viewsets.ModelViewSet):
-      queryset = Product.objects.all()
+      pagination_class = pagination.PageNumberPagination
+      queryset = Product.objects.all().order_by('id')
       serializer_class = ProductSerializer
 
 
 class CustomerListAPIView(generics.ListCreateAPIView):
-      queryset = Customer.objects.all()
+      pagination_class = pagination.PageNumberPagination
+      queryset = Customer.objects.all().order_by('total_purchase')
       serializer_class = CustomerSerializer
 
 
 class OrderListAPIView(generics.ListCreateAPIView):
-      queryset = Order.objects.all()
+      pagination_class = pagination.PageNumberPagination
+      queryset = Order.objects.all().order_by('id')
       serializer_class = OrderSerializer
 
 
