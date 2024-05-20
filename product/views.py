@@ -8,25 +8,25 @@ from .serializers import CategorySerializer, ProductSerializer, CustomerSerializ
 # Create your views here.
 
 class CategoryAPIView(viewsets.ModelViewSet):
-      permission_classes = [permissions.IsAuthenticated]
+      # permission_classes = [permissions.IsAuthenticated]
       queryset = Category.objects.all()
       serializer_class = CategorySerializer
       
       
 class ProductAPIView(viewsets.ModelViewSet):
-      permission_classes = [permissions.IsAuthenticated]
+      # permission_classes = [permissions.IsAuthenticated]
       queryset = Product.objects.all()
       serializer_class = ProductSerializer
 
 
 class CustomerListAPIView(generics.ListCreateAPIView):
-      permission_classes = [permissions.IsAuthenticated]
+      # permission_classes = [permissions.IsAuthenticated]
       queryset = Customer.objects.all()
       serializer_class = CustomerSerializer
 
 
 class OrderListAPIView(generics.ListCreateAPIView):
-      permission_classes = [permissions.IsAuthenticated]
+      # permission_classes = [permissions.IsAuthenticated]
       queryset = Order.objects.all()
       serializer_class = OrderSerializer
 
