@@ -55,3 +55,13 @@ class LeaveModel(models.Model):
     
     def __str__(self):
         return str(self.employee)
+
+
+class SpecialOccasionModel(models.Model):
+    branch = models.ForeignKey(Branch, on_delete=models.CASCADE, null=True)
+    start_occasion = models.DateField()
+    end_occasion = models.DateField()
+    description = models.CharField(max_length=200)
+
+    def __str__(self):
+        return self.description
