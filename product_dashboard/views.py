@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from rest_framework import decorators, response
 from django.http import JsonResponse
 from datetime import datetime, timedelta
 
@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from django.db.models import Sum, F
 
 # importing tables
-from product.models import Customer, Product, Order, Category
+from product.models import Product, Order, Category
 
 # Create your views here.
 def get_start_date(time_range):
@@ -26,7 +26,8 @@ def get_start_date(time_range):
       return start_date
 
 
-# Monthly inventory report
+# inventory report
+@decorators.api_view(['GET'])
 def inventory_report(request):
       time_range = request.GET.get('time_range', 'last_month')
       start_date = get_start_date(time_range)
@@ -106,12 +107,13 @@ def inventory_report(request):
                   'top_5_slow_turnover': top_5_slow_turnover,
             }
                   
-            return JsonResponse({'summary': summary_data}, safe=False)
+            return response.Response({'summary': summary_data}, status=200)
       except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
+            return response.Response({'error': str(e)}, status=500)
 
 
-
+# Function for product report
+@decorators.api_view(['GET'])
 def product_report(request):
       # Pass the query parameters
       time_range = request.GET.get('time_range', 'last_month')
@@ -163,8 +165,8 @@ def product_report(request):
                   'top_quantity_products': top_quantity_products,
             }
             
-            return JsonResponse(response_data, safe=False)
+            return response.Response(response_data, status=200)
       except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
+            return response.Response({'error': str(e)}, status=500)
       
       
