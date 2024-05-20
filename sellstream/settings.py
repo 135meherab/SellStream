@@ -26,7 +26,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG=True
-ALLOWED_HOSTS = ['*', 'https://sellstream.onrender.com']
+ALLOWED_HOSTS = ['*']
 CSRF_TRUSTED_ORIGINS = ['http://localhost:5173', 'http://127.0.0.1:5173', 'https://sellstream.onrender.com']
 
 
@@ -63,10 +63,8 @@ MIDDLEWARE = [
 
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = [
-    'http://127.0.0.1:8000', 'http://127.0.0.1:5500', 'http://127.0.0.1:3000',
-    'http://localhost:8000', 'https://sellstream.onrender.com',
+    'http://127.0.0.1:8000',  'https://sellstream.onrender.com',
     'http://127.0.0.1:5173', 'http://localhost:5173',
-    'https://sellstream.onrender.com', 'http://*.127.0.0.1:8000'
 ]
 
 ROOT_URLCONF = 'sellstream.urls'
@@ -93,31 +91,40 @@ TEMPLATES = [
 WSGI_APPLICATION = 'sellstream.wsgi.app'
 
 
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
+# Local settings for database
 
 DATABASES = {
     'default': {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": os.getenv("POSTGRES_DATABASE"),
-        "USER": os.getenv('POSTGRES_USER'),
-        "PASSWORD": os.getenv('POSTGRES_PASSWORD'),
-        "HOST": os.getenv("POSTGRES_HOST"),
-        "PORT": os.getenv("POSTGRES_PORT"),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
-DATABASES = {
-    'default': dj_database_url.config(
-        # Replace this value with your local database's connection string.
-        default='postgresql://postgres:PfTdyVlOHlgmKrWVlGvxICUKOPBpFUaA@roundhouse.proxy.rlwy.net:12820/railway',
-    )
+
+# Production settings for database
+
+
+# DATABASES = {
+#     'default': {
+#         "ENGINE": "django.db.backends.postgresql_psycopg2",
+#         "NAME": os.getenv("POSTGRES_DATABASE"),
+#         "USER": os.getenv('POSTGRES_USER'),
+#         "PASSWORD": os.getenv('POSTGRES_PASSWORD'),
+#         "HOST": os.getenv("POSTGRES_HOST"),
+#         "PORT": os.getenv("POSTGRES_PORT"),
+#     }
+# }
+
+# DATABASES = {
+#     'default': dj_database_url.config(
+#         # Replace this value with your local database's connection string.
+#         default='postgresql://postgres:PfTdyVlOHlgmKrWVlGvxICUKOPBpFUaA@roundhouse.proxy.rlwy.net:12820/railway',
+#     )
+# }
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
 }
 
 
