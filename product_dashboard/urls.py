@@ -1,7 +1,7 @@
 from django.urls import path
-from .views import inventory_analysis_monthly
+from .views import inventory_report
 
 
 urlpatterns = [
-      path('inventory_monthly/', inventory_analysis_monthly, name='inventory_monthly'),
+      path('inventory_report/', inventory_report, name='inventory_report'),
 ]

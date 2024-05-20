@@ -11,15 +11,32 @@ import matplotlib.pyplot as plt
 from product.models import Customer, Product, Order, Category
 
 # Create your views here.
+def get_start_date(time_range):
+      now = datetime.now()
+      
+      if time_range == 'today':
+            start_date = now.replace(hour=0, minute=0, second=0, microsecond=0)
+      elif time_range == 'yesterday':
+            start_date = now - timedelta(days=1)
+      elif time_range == 'last_week':
+            start_date = now - timedelta(days=7)
+      elif time_range == 'last_year':
+            start_date = now - timedelta(days=365)
+      else:
+            start_date = now - timedelta(days=30)
+      
+      return start_date
+
 
 # Monthly inventory report
-def inventory_analysis_monthly(request):
-      start_date = datetime.now() - timedelta(days=30)
+def inventory_report(request):
+      time_range = request.GET.get('time_range', 'last_month')
+      start_date = get_start_date(time_range)
       
       # Calculate total quantity sold for each product
       products_sold = Order.objects.filter(
             order_date__gte = start_date
-      ).values('products').annotate(total_sold = Sum('products__quantity'))
+      ).values('products').annotate(total_sold = Sum('products__quantity'))  #use annotate to use extra field
       
       # total sold for each product
       product_sales = {
@@ -39,6 +56,7 @@ def inventory_analysis_monthly(request):
             total_sold = product_sales.get(product.id, 0)
             inventory_turnover_rate = total_sold / (product.quantity + total_sold) if product.quantity + total_sold > 0 else 0
             
+            # getting data for the inventory analysis
             is_out_of_stock = product.quantity == 0
             is_slow_moving = inventory_turnover_rate < 0.1
             is_high_turnover = inventory_turnover_rate > 0.7
@@ -64,6 +82,7 @@ def inventory_analysis_monthly(request):
                   'is_slow_moving': inventory_turnover_rate < 0.1,
                   'is_out_of_stock': product.quantity == 0,
             })
+
             
       # Sort products by turnover rate
       analysis_data.sort(key = lambda x: x['inventory_turnover_rate'], reverse=True)
