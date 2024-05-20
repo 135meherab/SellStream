@@ -16,4 +16,6 @@ urlpatterns = [
     path('attendance/<int:pk>', views.AttendanceviewRetrive.as_view(), name="attendance"),
     
     path('leave/', views.Leaveview.as_view(), name="leave"),
+    path('occasion/', views.SpecialOccasionView.as_view(), name="occasion"),
+
 ]

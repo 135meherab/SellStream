@@ -43,6 +43,11 @@ class DetailsSerializer(serializers.ModelSerializer):
         model = User 
         fields = ['username', 'first_name', 'last_name','email']    
 
+class UserListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User 
+        fields = ['username', 'first_name', 'last_name','email']    
+
 class ShopSerializer(serializers.ModelSerializer):
     class Meta:
         model = Shop

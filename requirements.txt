@@ -11,8 +11,10 @@ djangorestframework
 dj_database_url
 drf-yasg
 faker
+matplotlib
 openapi-codec
 packaging
+pandas
 Pillow
 python-dotenv
 python-dateutil
@@ -26,3 +28,4 @@ six
 tzdata
 uritemplate
 urllib3
+firebase-admin
