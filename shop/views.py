@@ -35,13 +35,13 @@ class ShopCreateView(CreateAPIView):
 class ShopList(ListAPIView):
     queryset = Shop.objects.all()
     serializer_class = ShopSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
 #update to shop
 class ShopUpdateView(UpdateAPIView):
     queryset = Shop.objects.all()
     serializer_class = ShopSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
 #get all user list
 class UserListView(generics.ListAPIView):
@@ -63,7 +63,7 @@ class RegisterAPIView(APIView):
             user = user_serializer.save()
             token = default_token_generator.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
-            confirm_link = f"https://sellstream.onrender.com/activate/{uid}/{token}/"
+            confirm_link = f"https://sellstream.onrender.com/shop/activate/{uid}/{token}/"
             email_subject = "Confirm Your mail"
             email_body = render_to_string('confirm_email.html',{'confirm_link' : confirm_link})
             email = EmailMultiAlternatives(email_subject,'',to=[user.email])
@@ -122,11 +122,11 @@ class UserLogout(APIView):
 class UserDetailView(generics.RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = DetailsSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
 
 class UserUpdateView(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     serializers_class = UserUpdateSerializer
     def put(self, request):
         serializer = UserUpdateSerializer(instance=request.user, data=request.data)
@@ -137,7 +137,7 @@ class UserUpdateView(APIView):
 
 
 class PasswordChangeView(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     def post(self, request):
         serializer = PasswordChangeSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
