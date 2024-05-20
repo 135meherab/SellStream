@@ -29,19 +29,28 @@ from datetime import datetime, timedelta
 class ShopCreateView(CreateAPIView):
     queryset = Shop.objects.all()
     serializer_class = ShopSerializer
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
+
+    # def perform_create(self, serializer):
+    #     serializer.save(user=self.request.user)
 
 # get shop list
 class ShopList(ListAPIView):
     queryset = Shop.objects.all()
     serializer_class = ShopSerializer
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
+
+    # def get_queryset(self):
+    #     return Shop.objects.filter(user=self.request.user)
 
 #update to shop
 class ShopUpdateView(UpdateAPIView):
     queryset = Shop.objects.all()
     serializer_class = ShopSerializer
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
+
+    # def get_queryset(self):
+    #     return Shop.objects.filter(user=self.request.user)
 
 #get all user list
 class UserListView(generics.ListAPIView):
@@ -52,7 +61,7 @@ class UserListView(generics.ListAPIView):
 class Branchviewset(viewsets.ModelViewSet):
     queryset = Branch.objects.all()
     serializer_class = BranchSerializer
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
 
 class RegisterAPIView(APIView):
@@ -122,11 +131,11 @@ class UserLogout(APIView):
 class UserDetailView(generics.RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = DetailsSerializer
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
 
 class UserUpdateView(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     serializers_class = UserUpdateSerializer
     def put(self, request):
         serializer = UserUpdateSerializer(instance=request.user, data=request.data)
@@ -137,7 +146,7 @@ class UserUpdateView(APIView):
 
 
 class PasswordChangeView(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     def post(self, request):
         serializer = PasswordChangeSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
