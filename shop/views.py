@@ -29,7 +29,10 @@ from datetime import datetime, timedelta
 class ShopCreateView(CreateAPIView):
     queryset = Shop.objects.all()
     serializer_class = ShopSerializer
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
+
+    # def perform_create(self, serializer):
+    #     serializer.save(user=self.request.user)
 
 # get shop list
 class ShopList(ListAPIView):
@@ -37,11 +40,17 @@ class ShopList(ListAPIView):
     serializer_class = ShopSerializer
     permission_classes = [IsAuthenticated]
 
+    # def get_queryset(self):
+    #     return Shop.objects.filter(user=self.request.user)
+
 #update to shop
 class ShopUpdateView(UpdateAPIView):
     queryset = Shop.objects.all()
     serializer_class = ShopSerializer
     permission_classes = [IsAuthenticated]
+
+    # def get_queryset(self):
+    #     return Shop.objects.filter(user=self.request.user)
 
 #get all user list
 class UserListView(generics.ListAPIView):
@@ -52,7 +61,7 @@ class UserListView(generics.ListAPIView):
 class Branchviewset(viewsets.ModelViewSet):
     queryset = Branch.objects.all()
     serializer_class = BranchSerializer
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
 
 class RegisterAPIView(APIView):
@@ -63,7 +72,7 @@ class RegisterAPIView(APIView):
             user = user_serializer.save()
             token = default_token_generator.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
-            confirm_link = f"http://sellstream.onrender.com/shop/activate/{uid}/{token}/"
+            confirm_link = f"https://sellstream.onrender.com/shop/activate/{uid}/{token}/"
             email_subject = "Confirm Your mail"
             email_body = render_to_string('confirm_email.html',{'confirm_link' : confirm_link})
             email = EmailMultiAlternatives(email_subject,'',to=[user.email])

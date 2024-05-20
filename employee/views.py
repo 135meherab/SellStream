@@ -20,7 +20,7 @@ class DesignationViews(viewsets.ModelViewSet):
 class EmployeeViews(viewsets.ModelViewSet):
     queryset = EmployeeModel.objects.all()
     serializer_class = EmployeeSerializers
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
 
 # Attendance
