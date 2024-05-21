@@ -29,6 +29,7 @@ from datetime import datetime, timedelta
 class ShopCreateView(CreateAPIView):
     queryset = Shop.objects.all()
     serializer_class = ShopSerializer
+    authentication_classes = [TokenAuthentication]  # Use TokenAuthentication
     permission_classes = [IsAuthenticated]
 
     # def perform_create(self, serializer):
@@ -38,6 +39,7 @@ class ShopCreateView(CreateAPIView):
 class ShopList(ListAPIView):
     queryset = Shop.objects.all()
     serializer_class = ShopSerializer
+    authentication_classes = [TokenAuthentication]  # Use TokenAuthentication
     permission_classes = [IsAuthenticated]
 
     # def get_queryset(self):
@@ -47,6 +49,7 @@ class ShopList(ListAPIView):
 class ShopUpdateView(UpdateAPIView):
     queryset = Shop.objects.all()
     serializer_class = ShopSerializer
+    authentication_classes = [TokenAuthentication]  # Use TokenAuthentication
     permission_classes = [IsAuthenticated]
 
     # def get_queryset(self):
@@ -56,11 +59,14 @@ class ShopUpdateView(UpdateAPIView):
 class UserListView(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserListSerializer
+    authentication_classes = [TokenAuthentication]  # Use TokenAuthentication
+    permission_classes = [IsAuthenticated]
 
 # create Branch,get,update,delete
 class Branchviewset(viewsets.ModelViewSet):
     queryset = Branch.objects.all()
     serializer_class = BranchSerializer
+    authentication_classes = [TokenAuthentication]  # Use TokenAuthentication
     permission_classes = [IsAuthenticated]
 
 
@@ -131,11 +137,13 @@ class UserLogout(APIView):
 class UserDetailView(generics.RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = DetailsSerializer
+    authentication_classes = [TokenAuthentication]  # Use TokenAuthentication
     permission_classes = [IsAuthenticated]
 
 
 class UserUpdateView(APIView):
     permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]  # Use TokenAuthentication
     serializers_class = UserUpdateSerializer
     def put(self, request):
         serializer = UserUpdateSerializer(instance=request.user, data=request.data)
@@ -146,6 +154,7 @@ class UserUpdateView(APIView):
 
 
 class PasswordChangeView(APIView):
+    authentication_classes = [TokenAuthentication]  # Use TokenAuthentication
     permission_classes = [IsAuthenticated]
     def post(self, request):
         serializer = PasswordChangeSerializer(data=request.data, context={'request': request})
