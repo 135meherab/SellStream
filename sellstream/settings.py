@@ -13,7 +13,6 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv
-import dj_database_url
 
 load_dotenv()
 
@@ -21,17 +20,17 @@ import firebase_admin
 from firebase_admin import credentials
 
 cred = credentials.Certificate({
-  "type": "service_account",
-  "project_id": os.getenv("GOOGLE_CLOUD_PROJECT_ID"),
-  "private_key_id": os.getenv("GOOGLE_CLOUD_PRIVATE_KEY_ID"),
-  "private_key": os.getenv("GOOGLE_CLOUD_PRIVATE_KEY").replace("\\n", "\n"),
-  "client_email": os.getenv("GOOGLE_CLOUD_CLIENT_EMAIL"),
-  "client_id": os.getenv("GOOGLE_CLOUD_CLIENT_ID"),
-  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-  "token_uri": "https://oauth2.googleapis.com/token",
-  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-7xtv0%40selstream.iam.gserviceaccount.com",
-  "universe_domain": "googleapis.com"
+"type": "service_account",
+"project_id": os.getenv("GOOGLE_CLOUD_PROJECT_ID"),
+"private_key_id": os.getenv("GOOGLE_CLOUD_PRIVATE_KEY_ID"),
+"private_key": os.getenv("GOOGLE_CLOUD_PRIVATE_KEY").replace("\\n", "\n"),
+"client_email": os.getenv("GOOGLE_CLOUD_CLIENT_EMAIL"),
+"client_id": os.getenv("GOOGLE_CLOUD_CLIENT_ID"),
+"auth_uri": "https://accounts.google.com/o/oauth2/auth",
+"token_uri": "https://oauth2.googleapis.com/token",
+"auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+"client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-7xtv0%40selstream.iam.gserviceaccount.com",
+"universe_domain": "googleapis.com"
 })
 firebase_admin.initialize_app(cred)
 
@@ -54,7 +53,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG=True
 ALLOWED_HOSTS = ['*']
-CSRF_TRUSTED_ORIGINS = ['http://localhost:5173', 'http://127.0.0.1:5173', 'https://sellstream.onrender.com']
+CSRF_TRUSTED_ORIGINS = ['http://localhost:5173', 'http://127.0.0.1:5173', 'https://sellstream.onrender.com', 'https://sell-stream.netlify.app']
 
 
 # Application definition
@@ -79,21 +78,21 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOWED_ORIGINS = [
-    'http://127.0.0.1:8000',  'https://sellstream.onrender.com',
-    'http://127.0.0.1:5173', 'http://localhost:5173',
-]
+# CORS_ALLOWED_ORIGINS = [
+#     'http://127.0.0.1:8000',  'https://sellstream.onrender.com',
+#     'http://127.0.0.1:5173', 'http://localhost:5173',
+# ]
 
 ROOT_URLCONF = 'sellstream.urls'
 
