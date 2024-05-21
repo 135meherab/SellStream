@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, transaction
 from shop.models import Shop, Branch
 
 # Create your models here.
@@ -67,6 +67,27 @@ class Order(models.Model):
 
       def __str__(self):
             return self.order_unique_id
+      
+      
+      @transaction.atomic
+      def save(self, *args, **kwargs):
+            # Update quantity before saving the order
+            if self.pk is None:
+                  super().save(*args, **kwargs)
+                  self.update_product_quantities()
+            else:
+                  super().save(*args, **kwargs)
+                  
+                  
+      def update_product_quantities(self):
+            product_quantities = self.products.through.objects.filter(order = self)   #through is for m to m
+            for pq in product_quantities:
+                  product = pq.product
+                  if product.quantity >= pq.quantity:
+                        product.quantity -= pq.quantity
+                        product.save()
+                  else:
+                        raise ValueError(f"Insufficient quantity for product {product.name}")
 
 
 
