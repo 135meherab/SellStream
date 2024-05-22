@@ -1,6 +1,7 @@
 from rest_framework import generics
 from django.shortcuts import render,redirect
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
@@ -29,6 +30,7 @@ from datetime import datetime, timedelta
 class ShopCreateView(CreateAPIView):
     queryset = Shop.objects.all()
     serializer_class = ShopSerializer
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     # def perform_create(self, serializer):
@@ -38,6 +40,7 @@ class ShopCreateView(CreateAPIView):
 class ShopList(ListAPIView):
     queryset = Shop.objects.all()
     serializer_class = ShopSerializer
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     # def get_queryset(self):
@@ -47,6 +50,7 @@ class ShopList(ListAPIView):
 class ShopUpdateView(UpdateAPIView):
     queryset = Shop.objects.all()
     serializer_class = ShopSerializer
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     # def get_queryset(self):
@@ -56,11 +60,14 @@ class ShopUpdateView(UpdateAPIView):
 class UserListView(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserListSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
 
 # create Branch,get,update,delete
 class Branchviewset(viewsets.ModelViewSet):
     queryset = Branch.objects.all()
     serializer_class = BranchSerializer
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
 
@@ -119,6 +126,8 @@ class UserLogin(APIView):
                 return Response({'error': "Invalid Creadential"})
             
 class UserLogout(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
     def get(self, request):
         if request.user.is_authenticated:
             request.user.auth_token.delete()
@@ -131,11 +140,13 @@ class UserLogout(APIView):
 class UserDetailView(generics.RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = DetailsSerializer
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
 
 class UserUpdateView(APIView):
     permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
     serializers_class = UserUpdateSerializer
     def put(self, request):
         serializer = UserUpdateSerializer(instance=request.user, data=request.data)
@@ -147,6 +158,7 @@ class UserUpdateView(APIView):
 
 class PasswordChangeView(APIView):
     permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
     def post(self, request):
         serializer = PasswordChangeSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():

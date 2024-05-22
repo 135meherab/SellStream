@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from decimal import Decimal
-from rest_framework import viewsets, generics, status, response, views, permissions, pagination
+from rest_framework import viewsets, generics, status, response, views, permissions, pagination, authentication
 from .models import Category, Product, Customer, Order
 from .serializers import CategorySerializer, ProductSerializer, CustomerSerializer, OrderSerializer
 
@@ -8,30 +8,40 @@ from .serializers import CategorySerializer, ProductSerializer, CustomerSerializ
 # Create your views here.
 
 class CategoryAPIView(viewsets.ModelViewSet):
+      permission_classes = [permissions.IsAuthenticated]
+      authentication_classes = [authentication.TokenAuthentication]
       queryset = Category.objects.all()
       serializer_class = CategorySerializer
       
       
 class ProductAPIView(viewsets.ModelViewSet):
+      permission_classes = [permissions.IsAuthenticated]
+      authentication_classes = [authentication.TokenAuthentication]
       pagination_class = pagination.PageNumberPagination
       queryset = Product.objects.all().order_by('id')
       serializer_class = ProductSerializer
 
 
 class CustomerListAPIView(generics.ListCreateAPIView):
+      permission_classes = [permissions.IsAuthenticated]
+      authentication_classes = [authentication.TokenAuthentication]
       pagination_class = pagination.PageNumberPagination
       queryset = Customer.objects.all().order_by('total_purchase')
       serializer_class = CustomerSerializer
 
 
 class OrderListAPIView(generics.ListCreateAPIView):
+      permission_classes = [permissions.IsAuthenticated]
+      authentication_classes = [authentication.TokenAuthentication]
       pagination_class = pagination.PageNumberPagination
       queryset = Order.objects.all().order_by('id')
       serializer_class = OrderSerializer
 
 
 # use api view for the custom method
-class OrderCreateAPIView(views.APIView):  
+class OrderCreateAPIView(views.APIView): 
+      permission_classes = [permissions.IsAuthenticated]
+      authentication_classes = [authentication.TokenAuthentication] 
 
       def post(self, request, *args, **kwargs):
             print("request data: ", request.data)
