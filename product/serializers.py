@@ -8,7 +8,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
-      product_code = serializers.CharField(write_only=True)
+      product_code = serializers.CharField(required = False)
       
       class Meta:
             model = Product
@@ -34,10 +34,7 @@ class ProductSerializer(serializers.ModelSerializer):
                   data['product_code'] = instance.product_code
                   data['branch_name'] = instance.branch.name if instance.branch else None
                   data['category_name'] = instance.category.name if instance.category else None
-                  
-                  # Remove the branch and category IDs from the response
-                  data.pop('branch')
-                  data.pop('category')
+
 
             return data
 
