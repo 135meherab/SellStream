@@ -18,8 +18,9 @@ class ProductSerializer(serializers.ModelSerializer):
       # Ignore the product_code field when the request method is POST     
       def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
+            request = self.context.get('request', None)
             
-            if self.context['request'].method == 'POST':
+            if request and request.method == 'POST':
                   self.fields.pop('product_code')
 
 
@@ -27,11 +28,16 @@ class ProductSerializer(serializers.ModelSerializer):
       # show product code in get method
       def to_representation(self, instance):
             data = super().to_representation(instance)  # check the requested method
+            request = self.context.get('request', None)
 
-            if self.context['request'].method == 'GET':
+            if request and request.method == 'GET':
                   data['product_code'] = instance.product_code
                   data['branch_name'] = instance.branch.name if instance.branch else None
                   data['category_name'] = instance.category.name if instance.category else None
+                  
+                  # Remove the branch and category IDs from the response
+                  data.pop('branch')
+                  data.pop('category')
 
             return data
 
