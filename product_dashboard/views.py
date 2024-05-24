@@ -1,29 +1,72 @@
 from rest_framework import decorators, response
 from django.http import JsonResponse
 from datetime import datetime, timedelta
+import pandas as pd
+import numpy as np
+# import matplotlib.pyplot as plt
 
 # Import for DB analysis
-from django.db.models import Sum, F
+from django.db.models import Sum
 
 # importing tables
-from product.models import Product, Order, Category
+from product.models import Order, Category
 
 # Create your views here.
 def get_start_date(time_range):
       now = datetime.now()
       
       if time_range == 'today':
-            start_date = now.replace(hour=0, minute=0, second=0, microsecond=0)
+            return now.replace(hour=0, minute=0, second=0, microsecond=0)
       elif time_range == 'yesterday':
-            start_date = (now - timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+            return now - timedelta(days=1)
       elif time_range == 'last_week':
-            start_date = (now - timedelta(days=now.weekday() + 7)).replace(hour=0, minute=0, second=0, microsecond=0)
+            return now - timedelta(days=now.weekday() + 7)
       elif time_range == 'last_year':
-            start_date = now.replace(year=now.year - 1, month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
+            return now.replace(year=now.year - 1, month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
       else:
-            start_date = (now - timedelta(days=30)).replace(hour=0, minute=0, second=0, microsecond=0)
+            return now - timedelta(days=30)
+
+
+# Category report
+@decorators.api_view(['GET'])
+def sales_by_category(request):
+      # get the start date
+      time_range = request.GET.get('time_range', 'last_month')
+      start_date = get_start_date(time_range)
       
-      return start_date
+      # sales data from order based on category
+      orders = Order.objects.filter(order_date__gte = start_date)\
+            .values('products__category', 'total_price')
+            
+      # Convert for easier manipulation
+      df = pd.DataFrame(list(orders))
+      
+      if df.empty:
+            return JsonResponse({'message': 'No data available for the given time range'}, status = 404)
+      
+      # Group by
+      category_sales = df.groupby('products__category')['total_price'].sum().reset_index()
+      print(category_sales)
+      
+      # get category names
+      category_sales['products__category'] = category_sales['products__category']\
+            .apply(lambda x: Category.objects.get(id = x).name)
+            
+      # Prepare data for the front end
+      data = {
+            'categories': category_sales['products__category'].tolist(),
+            'total_sales': category_sales['total_price'].tolist(),
+      }
+      
+      return JsonResponse(data, status = 200)
+      
+
+
+# Inventory Turnover Rate
+# @decorators.api_view(['GET'])
+# def inventory_turnover_rate(request):
+#       # get the start date
+
 
 
 # inventory report

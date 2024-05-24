@@ -66,7 +66,7 @@ class Order(models.Model):
 
 
       def __str__(self):
-            return self.order_unique_id
+            return f"{self.order_unique_id} - {self.order_date}"
       
       
       @transaction.atomic
