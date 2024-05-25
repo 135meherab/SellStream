@@ -10,16 +10,29 @@ from .serializers import CategorySerializer, ProductSerializer, CustomerSerializ
 class CategoryAPIView(viewsets.ModelViewSet):
       permission_classes = [permissions.IsAuthenticated]
       authentication_classes = [authentication.TokenAuthentication]
-      queryset = Category.objects.all()
       serializer_class = CategorySerializer
+      
+      def get_queryset(self):
+            return Category.objects.filter(shop = self.request.user.shop).order_by('-id')
       
       
 class ProductAPIView(viewsets.ModelViewSet):
       permission_classes = [permissions.IsAuthenticated]
       authentication_classes = [authentication.TokenAuthentication]
       pagination_class = pagination.PageNumberPagination
-      queryset = Product.objects.all().order_by('id')
       serializer_class = ProductSerializer
+      
+      
+      def get_queryset(self):
+            user = self.request.user
+            
+            # By technically all products have a relation with a user
+            if hasattr(user, 'shop'):
+                  shop = user.shop
+                  branches = shop.branch_set.all()
+                  return Product.objects.filter(branch__in=branches).order_by('id')
+            else:
+                  return Product.objects.none()
 
 
 class CustomerListAPIView(generics.ListCreateAPIView):
