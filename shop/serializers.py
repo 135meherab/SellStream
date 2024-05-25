@@ -60,7 +60,9 @@ class ShopSerializer(serializers.ModelSerializer):
         return f"{obj.user.first_name} {obj.user.last_name}"
     
 
-    
+    def create(self, validated_data):
+        user = self.context['request'].user
+        return Shop.objects.create(user=user, **validated_data)
 
 class BranchSerializer(serializers.ModelSerializer):
     shop = serializers.SerializerMethodField()
