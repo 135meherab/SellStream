@@ -4,6 +4,7 @@ from rest_framework import viewsets, generics, status, response, views, permissi
 from .models import Category, Product, Customer, Order
 from .serializers import CategorySerializer, ProductSerializer, CustomerSerializer, OrderSerializer
 
+from rest_framework.pagination import PageNumberPagination
 
 # Create your views here.
 
@@ -38,17 +39,20 @@ class ProductAPIView(viewsets.ModelViewSet):
 class CustomerListAPIView(generics.ListCreateAPIView):
       permission_classes = [permissions.IsAuthenticated]
       authentication_classes = [authentication.TokenAuthentication]
-      pagination_class = pagination.PageNumberPagination
+      # pagination_class = pagination.PageNumberPagination
       queryset = Customer.objects.all().order_by('total_purchase')
       serializer_class = CustomerSerializer
-
+      pagination_class = PageNumberPagination
+      page_size = 10
 
 class OrderListAPIView(generics.ListCreateAPIView):
       permission_classes = [permissions.IsAuthenticated]
       authentication_classes = [authentication.TokenAuthentication]
-      pagination_class = pagination.PageNumberPagination
+      # pagination_class = pagination.PageNumberPagination
       queryset = Order.objects.all().order_by('id')
       serializer_class = OrderSerializer
+      pagination_class = PageNumberPagination
+      page_size = 10
 
 
 # use api view for the custom method
