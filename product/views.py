@@ -1,34 +1,64 @@
 from django.shortcuts import render
 from decimal import Decimal
-from rest_framework import viewsets, generics, status, response, views, permissions, pagination
+from rest_framework import viewsets, generics, status, response, views, permissions, pagination, authentication
 from .models import Category, Product, Customer, Order
 from .serializers import CategorySerializer, ProductSerializer, CustomerSerializer, OrderSerializer
 
+from rest_framework.pagination import PageNumberPagination
 
 # Create your views here.
 
 class CategoryAPIView(viewsets.ModelViewSet):
-      queryset = Category.objects.all()
+      permission_classes = [permissions.IsAuthenticated]
+      authentication_classes = [authentication.TokenAuthentication]
       serializer_class = CategorySerializer
+      
+      def get_queryset(self):
+            return Category.objects.filter(shop = self.request.user.shop).order_by('-id')
       
       
 class ProductAPIView(viewsets.ModelViewSet):
-      queryset = Product.objects.all()
+      permission_classes = [permissions.IsAuthenticated]
+      authentication_classes = [authentication.TokenAuthentication]
+      pagination_class = pagination.PageNumberPagination
       serializer_class = ProductSerializer
+      
+      
+      def get_queryset(self):
+            user = self.request.user
+            
+            # By technically all products have a relation with a user
+            if hasattr(user, 'shop'):
+                  shop = user.shop
+                  branches = shop.branch_set.all()
+                  return Product.objects.filter(branch__in=branches).order_by('id')
+            else:
+                  return Product.objects.none()
 
 
 class CustomerListAPIView(generics.ListCreateAPIView):
-      queryset = Customer.objects.all()
+      permission_classes = [permissions.IsAuthenticated]
+      authentication_classes = [authentication.TokenAuthentication]
+      # pagination_class = pagination.PageNumberPagination
+      queryset = Customer.objects.all().order_by('total_purchase')
       serializer_class = CustomerSerializer
-
+      pagination_class = PageNumberPagination
+      page_size = 10
 
 class OrderListAPIView(generics.ListCreateAPIView):
-      queryset = Order.objects.all()
+      permission_classes = [permissions.IsAuthenticated]
+      authentication_classes = [authentication.TokenAuthentication]
+      # pagination_class = pagination.PageNumberPagination
+      queryset = Order.objects.all().order_by('id')
       serializer_class = OrderSerializer
+      pagination_class = PageNumberPagination
+      page_size = 10
 
 
 # use api view for the custom method
-class OrderCreateAPIView(views.APIView):  
+class OrderCreateAPIView(views.APIView): 
+      permission_classes = [permissions.IsAuthenticated]
+      authentication_classes = [authentication.TokenAuthentication] 
 
       def post(self, request, *args, **kwargs):
             print("request data: ", request.data)
@@ -54,6 +84,20 @@ class OrderCreateAPIView(views.APIView):
                   order_serializer = OrderSerializer(data=order_data)
             if customer_serializer.is_valid() and order_serializer.is_valid():
                   order_instance = order_serializer.save()  # save the order data
+                  
+                  # Handle product quantities
+                  products_data = request.data.get('products', [])
+                  for product_data in products_data:
+                        product_id = product_data.get('product_id')
+                        quantity = product_data.get('quantity', 1)
+                        product = Product.objects.get(id=product_id)
+                        if product.quantity >= quantity:
+                              product.quantity -= quantity
+                              product.save()
+                        else:
+                              return response.Response(f"Product {product.name} is out of stock", status=status.HTTP_400_BAD_REQUEST)
+                        
+                        order_instance.products.add(product, through_defaults={'quantity': quantity})
 
                   # ensure the total price is a decimal
                   total_price_decimal = Decimal(order_instance.total_price)

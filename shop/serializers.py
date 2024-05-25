@@ -41,7 +41,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 class DetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = User 
-        fields = ['username', 'first_name', 'last_name','email']    
+        fields = ['id', 'username', 'email', 'first_name', 'last_name']    
 
 class UserListSerializer(serializers.ModelSerializer):
     class Meta:
@@ -49,15 +49,43 @@ class UserListSerializer(serializers.ModelSerializer):
         fields = ['username', 'first_name', 'last_name','email']    
 
 class ShopSerializer(serializers.ModelSerializer):
+    # Representing the user field with a custom method
+    user = serializers.SerializerMethodField()
     class Meta:
         model = Shop
         fields = '__all__'
+
+    # Custom method to get the user's full name
+    def get_user(self, obj):
+        return f"{obj.user.first_name} {obj.user.last_name}"
+    
+
     
 
 class BranchSerializer(serializers.ModelSerializer):
+    shop = serializers.SerializerMethodField()
+
     class Meta:
         model = Branch
-        fields = '__all__'
+        fields = ['id', 'name', 'location', 'shop']
+    
+    # Custom method to get the shop's name
+    def get_shop(self, obj):
+        return obj.shop.name
+
+    def create(self, validated_data):
+        # Get the user associated with the request
+        user = self.context['request'].user
+        
+        # Get the shop associated with the user
+        shop = user.shop
+        
+        # Add the shop to the validated data before creating the branch
+        validated_data['shop'] = shop
+        
+        # Create and return the branch
+        return Branch.objects.create(**validated_data)
+        
 
 class PasswordChangeSerializer(serializers.Serializer):
     old_password = serializers.CharField(required=True)
