@@ -31,7 +31,7 @@ urlpatterns = [
     path('user/password/change/', PasswordChangeView.as_view(), name='password-change'),
     path('createshop/', ShopCreateView.as_view(), name='shop-create'),
     path('get/', ShopList.as_view(), name='shop-list'),
-    path('update/<int:pk>/', ShopUpdateView.as_view(), name='shop-update'),
+    path('update/', ShopUpdateView.as_view(), name='shop-update'),
 
   
 ]
