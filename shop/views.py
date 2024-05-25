@@ -25,17 +25,20 @@ from rest_framework.authtoken.models import Token
 from rest_framework.generics import CreateAPIView, ListAPIView,UpdateAPIView
 from rest_framework import viewsets
 from datetime import datetime, timedelta
+from .permissions import IsOwner
+
+
 
 # create a shop
 class ShopCreateView(CreateAPIView):
     queryset = Shop.objects.all()
     serializer_class = ShopSerializer
-    authentication_classes = [TokenAuthentication]
 
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
-    # def perform_create(self, serializer):
-    #     serializer.save(user=self.request.user)
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 # get shop list
 class ShopList(ListAPIView):
@@ -43,31 +46,26 @@ class ShopList(ListAPIView):
     serializer_class = ShopSerializer
 
     authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated,IsOwner]
 
-    permission_classes = [IsAuthenticated]
-
-    # def get_queryset(self):
-    #     return Shop.objects.filter(user=self.request.user)
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_staff:  # Assuming 'is_staff' indicates an admin user
+            return Shop.objects.all()
+        return Shop.objects.filter(user=user)
 
 #update to shop
 class ShopUpdateView(UpdateAPIView):
     queryset = Shop.objects.all()
     serializer_class = ShopSerializer
-    authentication_classes = [TokenAuthentication]
-
-    permission_classes = [IsAuthenticated]
-
-    # def get_queryset(self):
-    #     return Shop.objects.filter(user=self.request.user)
-
-#get all user list
-class UserListView(generics.ListAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserListSerializer
 
     authentication_classes = [TokenAuthentication]
-
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Shop.objects.filter(user=self.request.user)
+
+
 
 # create Branch,get,update,delete
 class Branchviewset(viewsets.ModelViewSet):
@@ -75,8 +73,14 @@ class Branchviewset(viewsets.ModelViewSet):
     serializer_class = BranchSerializer
 
     authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated, IsOwner]
 
-    permission_classes = [IsAuthenticated]
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_staff:        # Assuming 'is_staff' indicates an admin user
+            return Branch.objects.all()  # Admin can see all branches
+        return Branch.objects.filter(shop__user=user)  # Regular users can only see their own branches
+
 
 
 class RegisterAPIView(APIView):
@@ -136,6 +140,7 @@ class UserLogin(APIView):
 class UserLogout(APIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [TokenAuthentication]
+    
     def get(self, request):
         if request.user.is_authenticated:
             request.user.auth_token.delete()
@@ -145,18 +150,22 @@ class UserLogout(APIView):
             return Response({'error': 'User is not authenticated.'}, status=status.HTTP_401_UNAUTHORIZED)
 
 #get all user        
-class UserDetailView(generics.RetrieveAPIView):
+class UserDetailView(ListAPIView):
     queryset = User.objects.all()
     serializer_class = DetailsSerializer
 
     authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated, IsOwner]
 
-    permission_classes = [IsAuthenticated]
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_staff:
+            return User.objects.all()  # Admin can see all users
+        return User.objects.filter(username=user.username)  # Regular users can only see their own Details
 
 
 class UserUpdateView(APIView):
     permission_classes = [IsAuthenticated]
-
     authentication_classes = [TokenAuthentication]
 
     serializers_class = UserUpdateSerializer
