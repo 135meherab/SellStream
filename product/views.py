@@ -4,38 +4,55 @@ from rest_framework import viewsets, generics, status, response, views, permissi
 from .models import Category, Product, Customer, Order
 from .serializers import CategorySerializer, ProductSerializer, CustomerSerializer, OrderSerializer
 
+from rest_framework.pagination import PageNumberPagination
 
 # Create your views here.
 
 class CategoryAPIView(viewsets.ModelViewSet):
       permission_classes = [permissions.IsAuthenticated]
       authentication_classes = [authentication.TokenAuthentication]
-      queryset = Category.objects.all()
       serializer_class = CategorySerializer
+      
+      def get_queryset(self):
+            return Category.objects.filter(shop = self.request.user.shop).order_by('-id')
       
       
 class ProductAPIView(viewsets.ModelViewSet):
       permission_classes = [permissions.IsAuthenticated]
       authentication_classes = [authentication.TokenAuthentication]
       pagination_class = pagination.PageNumberPagination
-      queryset = Product.objects.all().order_by('id')
       serializer_class = ProductSerializer
+      
+      
+      def get_queryset(self):
+            user = self.request.user
+            
+            # By technically all products have a relation with a user
+            if hasattr(user, 'shop'):
+                  shop = user.shop
+                  branches = shop.branch_set.all()
+                  return Product.objects.filter(branch__in=branches).order_by('id')
+            else:
+                  return Product.objects.none()
 
 
 class CustomerListAPIView(generics.ListCreateAPIView):
       permission_classes = [permissions.IsAuthenticated]
       authentication_classes = [authentication.TokenAuthentication]
-      pagination_class = pagination.PageNumberPagination
+      # pagination_class = pagination.PageNumberPagination
       queryset = Customer.objects.all().order_by('total_purchase')
       serializer_class = CustomerSerializer
-
+      pagination_class = PageNumberPagination
+      page_size = 10
 
 class OrderListAPIView(generics.ListCreateAPIView):
       permission_classes = [permissions.IsAuthenticated]
       authentication_classes = [authentication.TokenAuthentication]
-      pagination_class = pagination.PageNumberPagination
+      # pagination_class = pagination.PageNumberPagination
       queryset = Order.objects.all().order_by('id')
       serializer_class = OrderSerializer
+      pagination_class = PageNumberPagination
+      page_size = 10
 
 
 # use api view for the custom method
