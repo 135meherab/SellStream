@@ -1,24 +1,21 @@
-from rest_framework import generics
-from django.shortcuts import render,redirect
+from django.shortcuts import redirect
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from django.contrib.auth import login, authenticate,logout
-from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.views import View
-from .serializers import CustomUserCreationSerializer, LoginSerializer,DetailsSerializer,PasswordChangeSerializer,UserUpdateSerializer,ShopSerializer,BranchSerializer,UserListSerializer
+from .serializers import CustomUserCreationSerializer, LoginSerializer,DetailsSerializer,PasswordChangeSerializer,UserUpdateSerializer,ShopSerializer,BranchSerializer
 from .models import Shop,Branch
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
 from django.template.loader import render_to_string
-from django.core.mail import send_mail,EmailMultiAlternatives
+from django.core.mail import EmailMultiAlternatives
 from rest_framework.authtoken.models import Token
-from django.contrib.auth.views import LoginView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.models import Token
@@ -37,8 +34,12 @@ class ShopCreateView(CreateAPIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+    def create(self, request, *args, **kwargs):
+        # Check if the user already has a shop
+        existing_shop = Shop.objects.filter(user=request.user).exists()
+        if existing_shop:
+            return Response({"detail": "You already have a shop. You cannot create another one."}, status=400)
+        return super().create(request, *args, **kwargs)
 
 # get shop list
 class ShopList(ListAPIView):
@@ -46,7 +47,7 @@ class ShopList(ListAPIView):
     serializer_class = ShopSerializer
 
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated,IsOwner]
+    permission_classes = [IsAuthenticated]  # Assuming IsAuthenticated is sufficient
 
     def get_queryset(self):
         user = self.request.user
@@ -55,16 +56,18 @@ class ShopList(ListAPIView):
         return Shop.objects.filter(user=user)
 
 #update to shop
-class ShopUpdateView(UpdateAPIView):
-    queryset = Shop.objects.all()
-    serializer_class = ShopSerializer
-
-    authentication_classes = [TokenAuthentication]
+class ShopUpdateView(APIView):
     permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
 
-    def get_queryset(self):
-        return Shop.objects.filter(user=self.request.user)
-
+    serializers_class = ShopSerializer
+    def put(self, request):
+        shop = Shop.objects.get(user=request.user)
+        serializer = ShopSerializer(instance=shop, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 # create Branch,get,update,delete
@@ -73,14 +76,18 @@ class Branchviewset(viewsets.ModelViewSet):
     serializer_class = BranchSerializer
 
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated, IsOwner]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
         if user.is_staff:        # Assuming 'is_staff' indicates an admin user
             return Branch.objects.all()  # Admin can see all branches
         return Branch.objects.filter(shop__user=user)  # Regular users can only see their own branches
-
+    
+    # def perform_create(self, serializer):
+    #     # Associate the branch with the current user before saving
+    #     serializer.save(shop__user=self.request.user)
+    
 
 
 class RegisterAPIView(APIView):
@@ -178,7 +185,6 @@ class UserUpdateView(APIView):
 
 
 class PasswordChangeView(APIView):
-    authentication_classes = [TokenAuthentication]  # Use TokenAuthentication
     permission_classes = [IsAuthenticated]
     authentication_classes = [TokenAuthentication]
     def post(self, request):
