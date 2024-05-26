@@ -83,7 +83,11 @@ class Branchviewset(viewsets.ModelViewSet):
         if user.is_staff:        # Assuming 'is_staff' indicates an admin user
             return Branch.objects.all()  # Admin can see all branches
         return Branch.objects.filter(shop__user=user)  # Regular users can only see their own branches
-
+    
+    # def perform_create(self, serializer):
+    #     # Associate the branch with the current user before saving
+    #     serializer.save(shop__user=self.request.user)
+    
 
 
 class RegisterAPIView(APIView):
