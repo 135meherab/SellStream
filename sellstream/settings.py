@@ -117,11 +117,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'sellstream.wsgi.app'
 
-# for pagination
-REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10,  # Set the global page size here
-}
+
 # Local settings for database
 
 # DATABASES = {

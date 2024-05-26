@@ -1,10 +1,23 @@
 from rest_framework import serializers
 from .models import Category, Product, Customer, Order
+from shop.models import Shop
 
 class CategorySerializer(serializers.ModelSerializer):
       class Meta:
             model = Category
             fields = '__all__'
+            read_only_fields = ['shop']
+            
+      def create(self, validated_data):
+            request = self.context.get('request')
+            
+            # check the request is exist or not
+            if request and hasattr(request.user, 'user'):
+                  user = request.user
+                  shop = user.shop
+                  validated_data['shop'] = shop
+            return super().create(validated_data)
+
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -47,18 +60,27 @@ class ProductSerializer(serializers.ModelSerializer):
 
 
 class CustomerSerializer(serializers.ModelSerializer):
+      shop = serializers.PrimaryKeyRelatedField(
+            queryset = Shop.objects.all(),
+      )
+      
       class Meta:
             model = Customer
-            fields = '__all__'
-            
+            fields = ['name', 'phone', 'shop']
 
-      def save(self, **kwargs):
-            validated_data = dict(self.validated_data)
-            instance = Customer.objects.create(**validated_data)
-            return instance
 
 
 class OrderSerializer(serializers.ModelSerializer):
+      customer = CustomerSerializer()
+      
       class Meta:
             model = Order
             fields = '__all__'
+            
+            
+      def create(self, validated_data):
+            customer_data = validated_data.pop('customer')
+            customer = Customer.objects.create(**customer_data)
+            order = Order.objects.create(customer = customer, **validated_data)
+            return order
+            
