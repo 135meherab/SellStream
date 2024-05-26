@@ -33,6 +33,14 @@ class EmployeeViews(viewsets.ModelViewSet):
     serializer_class = EmployeeSerializers
     permission_classes = [IsAuthenticated]
 
+    
+    
+    # def get_queryset(self):
+    #     user = self.request.user
+    #     return EmployeeModel.objects.filter(user=user)
+
+    # def perform_create(self, serializer):
+    #     serializer.save(user=self.request.user)
 
 # Attendance
 class Attendanceview(GenericAPIView, ListModelMixin, CreateModelMixin):
