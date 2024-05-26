@@ -61,6 +61,7 @@ class ShopSerializer(serializers.ModelSerializer):
     
 
     def create(self, validated_data):
+        # Correct the type and get the user associated with the request
         user = self.context['request'].user
         return Shop.objects.create(user=user, **validated_data)
 
@@ -76,7 +77,7 @@ class BranchSerializer(serializers.ModelSerializer):
         return obj.shop.name
 
     def create(self, validated_data):
-        # Get the user associated with the request
+        # Correct the type and get the user associated with the request
         user = self.context['request'].user
         
         # Get the shop associated with the user
