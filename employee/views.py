@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from rest_framework import viewsets
-from .models import DesignationModel, EmployeeModel, AttendanceModel, LeaveModel, SpecialOccasionModel
+from .models import DesignationModel, EmployeeModel, AttendanceModel, LeaveModel, SpecialOccasionModel,Shop
 from .serializers import DesignationSerializers, EmployeeSerializers, AttendanceSerializers, LeaveSerializers, SpecialOccasionSerializers
 from rest_framework.generics import GenericAPIView
 from rest_framework.mixins import ListModelMixin, CreateModelMixin, RetrieveModelMixin
@@ -15,6 +15,17 @@ class DesignationViews(viewsets.ModelViewSet):
     queryset = DesignationModel.objects.all()
     serializer_class = DesignationSerializers
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        try:
+            # Get the current user's shop
+            shop_user = Shop.objects.get(user = self.request.user)
+            # Filter the designations by the user's shop
+            return DesignationModel.objects.filter(owner = shop_user)
+        except Shop.DoesNotExist:
+            return DesignationModel.objects.none()
+
+
 
 # Employee
 class EmployeeViews(viewsets.ModelViewSet):
