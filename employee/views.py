@@ -5,6 +5,7 @@ from .serializers import DesignationSerializers, EmployeeSerializers, Attendance
 from rest_framework.generics import GenericAPIView
 from rest_framework.mixins import ListModelMixin, CreateModelMixin, RetrieveModelMixin
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
@@ -14,7 +15,9 @@ from rest_framework.response import Response
 class DesignationViews(viewsets.ModelViewSet):
     queryset = DesignationModel.objects.all()
     serializer_class = DesignationSerializers
+
     permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
 
     def get_queryset(self):
         try:
@@ -31,21 +34,17 @@ class DesignationViews(viewsets.ModelViewSet):
 class EmployeeViews(viewsets.ModelViewSet):
     queryset = EmployeeModel.objects.all()
     serializer_class = EmployeeSerializers
+
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
-    
-    
-    # def get_queryset(self):
-    #     user = self.request.user
-    #     return EmployeeModel.objects.filter(user=user)
-
-    # def perform_create(self, serializer):
-    #     serializer.save(user=self.request.user)
 
 # Attendance
 class Attendanceview(GenericAPIView, ListModelMixin, CreateModelMixin):
     queryset = AttendanceModel.objects.all()
     serializer_class = AttendanceSerializers
+
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
@@ -56,6 +55,8 @@ class Attendanceview(GenericAPIView, ListModelMixin, CreateModelMixin):
 class AttendanceviewRetrive(GenericAPIView, RetrieveModelMixin):
     queryset = AttendanceModel.objects.all()
     serializer_class = AttendanceSerializers
+
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
@@ -66,6 +67,8 @@ class AttendanceviewRetrive(GenericAPIView, RetrieveModelMixin):
 class Leaveview(GenericAPIView, ListModelMixin, CreateModelMixin):
     queryset = LeaveModel.objects.all()
     serializer_class = LeaveSerializers
+
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):

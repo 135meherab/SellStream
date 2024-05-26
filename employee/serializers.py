@@ -25,7 +25,6 @@ class DesignationSerializers(serializers.ModelSerializer):
         return DesignationModel.objects.create(**validated_data)
     
 
-    
 class EmployeeSerializers(serializers.ModelSerializer):
     designation_name = serializers.SerializerMethodField()
     branch_name = serializers.SerializerMethodField()
