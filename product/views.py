@@ -73,6 +73,7 @@ class OrderListAPIView(generics.ListCreateAPIView):
 
 
 # use api view for the custom method
+#TODO: make the views workable for create order
 class OrderCreateAPIView(views.APIView): 
       permission_classes = [permissions.IsAuthenticated]
       authentication_classes = [authentication.TokenAuthentication] 
