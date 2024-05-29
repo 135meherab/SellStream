@@ -11,15 +11,12 @@ from .views import (
     ShopList,
     ShopUpdateView,
     Branchviewset,
-
-    
 )
 from rest_framework.routers import DefaultRouter
 
 
 router = DefaultRouter()
 router.register('branch',Branchviewset)
-
 urlpatterns = [
     path('', include(router.urls)),
     path('sign_up/', RegisterAPIView.as_view(), name='sign_up'),
@@ -32,6 +29,4 @@ urlpatterns = [
     path('createshop/', ShopCreateView.as_view(), name='shop-create'),
     path('get/', ShopList.as_view(), name='shop-list'),
     path('update/', ShopUpdateView.as_view(), name='shop-update'),
-
-  
 ]

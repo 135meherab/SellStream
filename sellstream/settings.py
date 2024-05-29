@@ -78,6 +78,7 @@ INSTALLED_APPS = [
     'product_dashboard',
     'shop',
     'third_party',
+    'ratings',
     'django_filters',
 ]
 
