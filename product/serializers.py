@@ -19,7 +19,6 @@ class CategorySerializer(serializers.ModelSerializer):
             return super().create(validated_data)
 
 
-
 class ProductSerializer(serializers.ModelSerializer):
       product_code = serializers.CharField(required = False)
       

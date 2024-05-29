@@ -168,7 +168,7 @@ class UserDetailView(ListAPIView):
         user = self.request.user
         if user.is_staff:
             return User.objects.all()  # Admin can see all users
-        return User.objects.filter(username=user.username)  # Regular users can only see their own Details
+        return User.objects.filter(id=user.id)  # Regular users can only see their own Details
 
 
 class UserUpdateView(APIView):
