@@ -18,7 +18,7 @@ class DesignationViews(viewsets.ModelViewSet):
     serializer_class = DesignationSerializers
 
     permission_classes = [IsAuthenticated]
-    # authentication_classes = [TokenAuthentication]
+    authentication_classes = [TokenAuthentication]
 
     def get_queryset(self):
         try:
@@ -36,7 +36,7 @@ class EmployeeViews(viewsets.ModelViewSet):
     queryset = EmployeeModel.objects.all()
     serializer_class = EmployeeSerializers
 
-    # authentication_classes = [TokenAuthentication]
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
 
