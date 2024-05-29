@@ -1,33 +1,55 @@
 from django.shortcuts import render
 from rest_framework import viewsets
-from .models import DesignationModel, EmployeeModel, AttendanceModel, LeaveModel, SpecialOccasionModel
+from .models import DesignationModel, EmployeeModel, AttendanceModel, LeaveModel, SpecialOccasionModel,Shop
 from .serializers import DesignationSerializers, EmployeeSerializers, AttendanceSerializers, LeaveSerializers, SpecialOccasionSerializers
 from rest_framework.generics import GenericAPIView
 from rest_framework.mixins import ListModelMixin, CreateModelMixin, RetrieveModelMixin
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.views import APIView
 from rest_framework.response import Response
-
+from rest_framework.filters import SearchFilter
+from django_filters.rest_framework import DjangoFilterBackend   
 # Create your views here.
 
 # Designation
 class DesignationViews(viewsets.ModelViewSet):
     queryset = DesignationModel.objects.all()
     serializer_class = DesignationSerializers
+
     permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+
+    def get_queryset(self):
+        try:
+            # Get the current user's shop
+            shop_user = Shop.objects.get(user = self.request.user)
+            # Filter the designations by the user's shop
+            return DesignationModel.objects.filter(owner = shop_user)
+        except Shop.DoesNotExist:
+            return DesignationModel.objects.none()
+
+
 
 # Employee
 class EmployeeViews(viewsets.ModelViewSet):
     queryset = EmployeeModel.objects.all()
     serializer_class = EmployeeSerializers
+
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
+
 
 
 # Attendance
 class Attendanceview(GenericAPIView, ListModelMixin, CreateModelMixin):
     queryset = AttendanceModel.objects.all()
     serializer_class = AttendanceSerializers
+
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    filterset_fields = ['employee__branch__name', 'date']
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
@@ -37,6 +59,8 @@ class Attendanceview(GenericAPIView, ListModelMixin, CreateModelMixin):
 class AttendanceviewRetrive(GenericAPIView, RetrieveModelMixin):
     queryset = AttendanceModel.objects.all()
     serializer_class = AttendanceSerializers
+
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
@@ -47,6 +71,8 @@ class AttendanceviewRetrive(GenericAPIView, RetrieveModelMixin):
 class Leaveview(GenericAPIView, ListModelMixin, CreateModelMixin):
     queryset = LeaveModel.objects.all()
     serializer_class = LeaveSerializers
+
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):

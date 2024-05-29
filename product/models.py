@@ -71,20 +71,15 @@ class Order(models.Model):
       
       @transaction.atomic
       def save(self, *args, **kwargs):
-            # Update quantity before saving the order
-            if self.pk is None:
-                  super().save(*args, **kwargs)
-                  self.update_product_quantities()
-            else:
-                  super().save(*args, **kwargs)
-                  
+            super().save(*args, **kwargs)
+            self.update_product_quantities()
+
                   
       def update_product_quantities(self):
-            product_quantities = self.products.through.objects.filter(order = self)   #through is for m to m
-            for pq in product_quantities:
-                  product = pq.product
-                  if product.quantity >= pq.quantity:
-                        product.quantity -= pq.quantity
+            for product_id, quantity in self.product_quantities.items():
+                  product = Product.objects.get(id = product_id)
+                  if product.quantity >= quantity:
+                        product.quantity -= quantity
                         product.save()
                   else:
                         raise ValueError(f"Insufficient quantity for product {product.name}")
