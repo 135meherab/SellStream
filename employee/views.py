@@ -40,6 +40,7 @@ class EmployeeViews(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
 
+
 # Attendance
 class Attendanceview(GenericAPIView, ListModelMixin, CreateModelMixin):
     queryset = AttendanceModel.objects.all()

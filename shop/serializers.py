@@ -43,6 +43,11 @@ class DetailsSerializer(serializers.ModelSerializer):
         model = User 
         fields = ['id', 'username', 'email', 'first_name', 'last_name']    
 
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['isadmin'] = instance.is_staff
+        return representation
+
 class UserListSerializer(serializers.ModelSerializer):
     class Meta:
         model = User 

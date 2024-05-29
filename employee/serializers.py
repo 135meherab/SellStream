@@ -33,7 +33,7 @@ class EmployeeSerializers(serializers.ModelSerializer):
         model = EmployeeModel
         fields = '__all__'
         
-
+        
     def get_designation_name(self, obj):
         return obj.designation.name if obj.designation else None
 
