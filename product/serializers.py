@@ -68,9 +68,28 @@ class CustomerSerializer(serializers.ModelSerializer):
             model = Customer
             fields = ['name', 'phone', 'shop', 'total_purchase']
 
+class ProductOrderSerializer(serializers.Serializer):
+      id = serializers.IntegerField()
+      quantity = serializers.IntegerField()
 
-
-class OrderSerializer(serializers.ModelSerializer):     
+class OrderSerializer(serializers.ModelSerializer):
+      products = ProductOrderSerializer(many = True)
+      
       class Meta:
             model = Order
             fields = '__all__'
+            
+      def create(self, validated_data):
+            products_data = validated_data.pop('products')
+            order = Order.objects.create(**validated_data)
+            
+            for product_data in products_data:
+                  product = Product.objects.get(id = product_data['id'])
+                  order.products.add(product)
+                  
+                  # update the product quantity
+                  product.quantity -= product_data['quantity']
+                  product.save()
+                  
+                  
+            return order

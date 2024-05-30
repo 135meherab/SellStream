@@ -86,22 +86,22 @@ class OrderListAPIView(generics.ListCreateAPIView):
                   customer = Customer.objects.get(phone = customer_phone)
             except Customer.DoesNotExist:
                   customer_serializer = CustomerSerializer(data=customer_data)
-                  
                   if customer_serializer.is_valid():
                         customer = customer_serializer.save()
                   else:
                         return response.Response(
-                              customer_serializer.errors,
-                              status=status.HTTP_400_BAD_REQUEST
-                        )
-                        
+                                    customer_serializer.errors, 
+                                    status=status.HTTP_400_BAD_REQUEST,
+                              )                        
                         
             # Create order
-            order_data = request.data.copy()
+            order_data = request.data
             order_data['customer'] = customer.id
             order_serializer = OrderSerializer(data=order_data)
+            print(order_serializer)
             if order_serializer.is_valid():
-                  order = order_serializer.save()
+                  order = order_serializer.save()      
+                        
                   return response.Response(
                               order_serializer.data, 
                               status=status.HTTP_201_CREATED,

@@ -73,20 +73,3 @@ class Order(models.Model):
       def __str__(self):
             return f"{self.order_unique_id} - {self.order_date}"
       
-      
-      @transaction.atomic
-      def save(self, *args, **kwargs):
-            super().save(*args, **kwargs)
-            self.update_product_quantities()
-
-                  
-      def update_product_quantities(self):
-            for product in self.products.all():
-                  if product.quantity >= 0:
-                        product.quantity -= 1
-                        product.save()
-                  else:
-                        raise ValueError(f"Insufficient quantity for product {product.name}")
-
-
-
