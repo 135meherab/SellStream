@@ -81,6 +81,7 @@ class OrderListAPIView(generics.ListCreateAPIView):
             
             
       def create(self, request, *args, **kwargs):
+            serializer_context = {'request': request}
             shop = request.user.shop 
             customer_data = request.data.get('customer', {})
             customer_phone = customer_data.get('phone')
@@ -103,7 +104,7 @@ class OrderListAPIView(generics.ListCreateAPIView):
             order_data = request.data
             order_data['customer'] = customer.id
             order_serializer = OrderSerializer(data=order_data)
-            print(order_serializer)
+            # print(order_serializer)
             if order_serializer.is_valid():
                   order = order_serializer.save()      
                         

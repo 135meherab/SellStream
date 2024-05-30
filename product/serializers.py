@@ -86,11 +86,24 @@ class ProductOrderSerializer(serializers.Serializer):
 
 class OrderSerializer(serializers.ModelSerializer):
       products = ProductOrderSerializer(many = True)
+      branch_name = serializers.CharField(source = 'branch.name', read_only = True)
+      customer_name = serializers.CharField(source = 'customer.name', read_only = True)
       
       class Meta:
             model = Order
             fields = '__all__'
+            read_only_fields = ['branch_name', 'customer_name']
             
+      # Change representation for get
+      def to_representation(self, instance):
+            data = super().to_representation(instance)
+            request = self.context.get('request')
+            if request and request.method != 'GET':
+                  del data['branch_name']
+                  del data['customer_name']
+            return data
+      
+      # Create the order
       def create(self, validated_data):
             products_data = validated_data.pop('products')
             order = Order.objects.create(**validated_data)
