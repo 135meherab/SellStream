@@ -168,7 +168,7 @@ class UserDetailView(ListAPIView):
         user = self.request.user
         if user.is_staff:
             return User.objects.all()  # Admin can see all users
-        return User.objects.filter(username=user.username)  # Regular users can only see their own Details
+        return User.objects.filter(id=user.id)  # Regular users can only see their own Details
 
 
 class UserUpdateView(APIView):
@@ -195,4 +195,4 @@ class PasswordChangeView(APIView):
             user.save()
             return Response({'message': 'Password changed successfully.'}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+

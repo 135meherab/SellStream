@@ -8,7 +8,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.views import APIView
 from rest_framework.response import Response
-
+from rest_framework.filters import SearchFilter
+from django_filters.rest_framework import DjangoFilterBackend   
 # Create your views here.
 
 # Designation
@@ -39,6 +40,7 @@ class EmployeeViews(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
 
+
 # Attendance
 class Attendanceview(GenericAPIView, ListModelMixin, CreateModelMixin):
     queryset = AttendanceModel.objects.all()
@@ -46,6 +48,8 @@ class Attendanceview(GenericAPIView, ListModelMixin, CreateModelMixin):
 
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    filterset_fields = ['employee__branch__name', 'date']
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
