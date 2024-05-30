@@ -67,6 +67,8 @@ class CustomerSerializer(serializers.ModelSerializer):
             model = Customer
             fields = ['name', 'phone', 'shop', 'total_purchase']
 
+
+
 class ProductOrderSerializer(serializers.Serializer):
       id = serializers.IntegerField()
       quantity = serializers.IntegerField()
