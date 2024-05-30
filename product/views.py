@@ -41,7 +41,7 @@ class ProductAPIView(viewsets.ModelViewSet):
             if hasattr(user, 'shop'):
                   shop = user.shop
                   branches = shop.branch_set.all()
-                  return Product.objects.filter(branch__in=branches).order_by('id')
+                  return Product.objects.filter(branch__in=branches).order_by('-id')
             else:
                   return Product.objects.none()
 
