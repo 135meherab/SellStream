@@ -2,7 +2,7 @@ from rest_framework import viewsets, generics, status, response, permissions, pa
 from django_filters import rest_framework as filters
 from .models import Category, Product, Customer, Order
 from .serializers import CategorySerializer, ProductSerializer, CustomerSerializer, OrderSerializer
-from .filters import ProductFilter
+from .filters import ProductFilter, OrderFilter
 
 from rest_framework.pagination import PageNumberPagination
 
@@ -64,6 +64,8 @@ class CustomerListAPIView(generics.ListAPIView):
 class OrderListAPIView(generics.ListCreateAPIView):
       permission_classes = [permissions.IsAuthenticated]
       authentication_classes = [authentication.TokenAuthentication]
+      filter_backends = (filters.DjangoFilterBackend,)
+      filterset_class = OrderFilter
       serializer_class = OrderSerializer
       pagination_class = pagination.PageNumberPagination
       page_size = 10
