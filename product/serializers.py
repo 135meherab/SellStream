@@ -61,14 +61,13 @@ class ProductSerializer(serializers.ModelSerializer):
 
 
 
-class CustomerSerializer(serializers.ModelSerializer):
-      
+class CustomerSerializer(serializers.ModelSerializer):     
       class Meta:
             model = Customer
             fields = ['name', 'phone', 'shop', 'total_purchase']
 
 
-
+# For using the product dict
 class ProductOrderSerializer(serializers.Serializer):
       id = serializers.IntegerField()
       quantity = serializers.IntegerField()
