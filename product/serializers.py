@@ -106,8 +106,32 @@ class OrderSerializer(serializers.ModelSerializer):
       # Create the order
       def create(self, validated_data):
             products_data = validated_data.pop('products')
+            insufficient_products = []
+            
+            
+            # Check the product availability before creating the order
+            for product_data in products_data:
+                  product = Product.objects.get(id = product_data['id'])
+                  if product.quantity < product_data['quantity']:
+                        insufficient_products.append({
+                              'name': product.name,
+                              'available_quantity': product.quantity,
+                        })
+            
+            # send the total of insufficient products
+            if insufficient_products:
+                  raise serializers.ValidationError({
+                        'insufficient_products':[
+                              f"{item['name']} (available:{item['available_quantity']})"
+                              for item in insufficient_products
+                        ]
+                  })
+            
+            
+            # Create the order
             order = Order.objects.create(**validated_data)
             
+
             for product_data in products_data:
                   product = Product.objects.get(id = product_data['id'])
                   order.products.add(product)
