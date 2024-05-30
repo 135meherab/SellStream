@@ -6,16 +6,19 @@ class CategorySerializer(serializers.ModelSerializer):
       class Meta:
             model = Category
             fields = '__all__'
-            read_only_fields = ['shop']
+            extra_kwargs = {
+                  'shop': {'required': False}
+            }
             
       def create(self, validated_data):
             request = self.context.get('request')
             
             # check the request is exist or not
-            if request and hasattr(request.user, 'user'):
-                  user = request.user
-                  shop = user.shop
+            if request and hasattr(request.user, 'shop'):
+                  shop = request.user.shop
                   validated_data['shop'] = shop
+            else:
+                  raise serializers.ValidationError('User does not have a shop.')
             return super().create(validated_data)
 
 
@@ -59,27 +62,35 @@ class ProductSerializer(serializers.ModelSerializer):
 
 
 class CustomerSerializer(serializers.ModelSerializer):
-      shop = serializers.PrimaryKeyRelatedField(
-            queryset = Shop.objects.all(),
-      )
       
       class Meta:
             model = Customer
-            fields = ['name', 'phone', 'shop']
+            fields = ['name', 'phone', 'shop', 'total_purchase']
 
 
+
+class ProductOrderSerializer(serializers.Serializer):
+      id = serializers.IntegerField()
+      quantity = serializers.IntegerField()
 
 class OrderSerializer(serializers.ModelSerializer):
-      customer = CustomerSerializer()
+      products = ProductOrderSerializer(many = True)
       
       class Meta:
             model = Order
             fields = '__all__'
             
-            
       def create(self, validated_data):
-            customer_data = validated_data.pop('customer')
-            customer = Customer.objects.create(**customer_data)
-            order = Order.objects.create(customer = customer, **validated_data)
-            return order
+            products_data = validated_data.pop('products')
+            order = Order.objects.create(**validated_data)
             
+            for product_data in products_data:
+                  product = Product.objects.get(id = product_data['id'])
+                  order.products.add(product)
+                  
+                  # update the product quantity
+                  product.quantity -= product_data['quantity']
+                  product.save()
+                  
+                  
+            return order

@@ -1,26 +1,22 @@
-from django.db.models.signals import m2m_changed, pre_save
+from django.db.models.signals import m2m_changed, post_save
 from django.dispatch import receiver
 
 
-from .models import Order, Customer
+from .models import Order, Product
+            
+
+@receiver(post_save, sender = Order)
+def update_customer_total_purchase(sender, instance, created, **kwargs):
+      if created:
+            customer = instance.customer
+            customer.total_purchase += instance.total_price
+            customer.save()
+      
 
 @receiver(m2m_changed, sender = Order.products.through)
 def update_product_quantities(sender, instance, action, **kwargs):
-      if action == 'post_add':
-            instance.update_product_quantities()
-            
-
-@receiver(pre_save, sender = Order)
-def handle_customer(sender, instance, **kwargs):
-      customer_phone = instance.customer.phone
-      
-      try:
-            customer = Customer.objects.get(phone = customer_phone)
-      except Customer.DoesNotExist:
-            customer = Customer.objects.create(
-                  shop = instance.branch.shop,
-                  phone = customer_phone,
-                  name = instance.customer.name,
-            )
-            
-      instance.customer = customer
+      if action == 'post_add' and hasattr(instance, 'product_data'):
+            for product_info in instance.product_data:
+                  product = Product.objects.get(id = product_info['id'])
+                  product.quantity -= product_info['quantity']
+                  product.save()
