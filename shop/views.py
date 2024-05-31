@@ -198,7 +198,6 @@ class UserLogin(APIView):
                     # User is an admin
                     user_info['role'] = 'isadmin'
                     user_info['username'] = user.username
-                    user_info['is_superuser'] = True
                 else:
                     # User is an owner
                     user_info['role'] = 'isowner'
@@ -242,8 +241,8 @@ class UserDetailView(ListAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        # if user.is_staff:
-        #     return User.objects.all()  # Admin can see all users
+        if user.is_superuser:
+            return User.objects.all()  # Superuser can see all users
         return User.objects.filter(id=user.id)  # Regular users can only see their own Details
 
 
