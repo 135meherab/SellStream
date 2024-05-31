@@ -1,8 +1,8 @@
-from django.shortcuts import render
-from decimal import Decimal
-from rest_framework import viewsets, generics, status, response, views, permissions, pagination, authentication
+from rest_framework import viewsets, generics, status, response, permissions, pagination, authentication
+from django_filters import rest_framework as filters
 from .models import Category, Product, Customer, Order
 from .serializers import CategorySerializer, ProductSerializer, CustomerSerializer, OrderSerializer
+from .filters import ProductFilter, OrderFilter
 
 from rest_framework.pagination import PageNumberPagination
 
@@ -29,6 +29,9 @@ class ProductAPIView(viewsets.ModelViewSet):
       authentication_classes = [authentication.TokenAuthentication]
       pagination_class = pagination.PageNumberPagination
       serializer_class = ProductSerializer
+      filter_backends = (filters.DjangoFilterBackend,)
+      filterset_class = ProductFilter
+      
       
       
       def get_queryset(self):
@@ -38,12 +41,12 @@ class ProductAPIView(viewsets.ModelViewSet):
             if hasattr(user, 'shop'):
                   shop = user.shop
                   branches = shop.branch_set.all()
-                  return Product.objects.filter(branch__in=branches).order_by('id')
+                  return Product.objects.filter(branch__in=branches).order_by('-id')
             else:
                   return Product.objects.none()
 
 
-class CustomerListAPIView(generics.ListCreateAPIView):
+class CustomerListAPIView(generics.ListAPIView):
       permission_classes = [permissions.IsAuthenticated]
       authentication_classes = [authentication.TokenAuthentication]
       serializer_class = CustomerSerializer
@@ -61,6 +64,8 @@ class CustomerListAPIView(generics.ListCreateAPIView):
 class OrderListAPIView(generics.ListCreateAPIView):
       permission_classes = [permissions.IsAuthenticated]
       authentication_classes = [authentication.TokenAuthentication]
+      filter_backends = (filters.DjangoFilterBackend,)
+      filterset_class = OrderFilter
       serializer_class = OrderSerializer
       pagination_class = pagination.PageNumberPagination
       page_size = 10
@@ -76,6 +81,7 @@ class OrderListAPIView(generics.ListCreateAPIView):
             
             
       def create(self, request, *args, **kwargs):
+            serializer_context = {'request': request}
             shop = request.user.shop 
             customer_data = request.data.get('customer', {})
             customer_phone = customer_data.get('phone')
@@ -98,7 +104,7 @@ class OrderListAPIView(generics.ListCreateAPIView):
             order_data = request.data
             order_data['customer'] = customer.id
             order_serializer = OrderSerializer(data=order_data)
-            print(order_serializer)
+            # print(order_serializer)
             if order_serializer.is_valid():
                   order = order_serializer.save()      
                         

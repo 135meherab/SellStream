@@ -53,6 +53,7 @@ class ProductSerializer(serializers.ModelSerializer):
 
             return data
 
+      # methods to find the relation with obj
       def get_branch_name(self, obj):
             return obj.branch.name if obj.branch else None
 
@@ -61,25 +62,48 @@ class ProductSerializer(serializers.ModelSerializer):
 
 
 
-class CustomerSerializer(serializers.ModelSerializer):
+class CustomerSerializer(serializers.ModelSerializer):    
+      shop_name = serializers.CharField(source = 'shop.name', read_only = True)       # get the shop name
       
       class Meta:
             model = Customer
-            fields = ['name', 'phone', 'shop', 'total_purchase']
+            fields = ['name', 'phone', 'shop', 'shop_name', 'total_purchase']
+            
+      
+      # make presentation on get
+      def to_representation(self, instance):
+            data = super().to_representation(instance)
+            if self.context['request'].method != 'GET':
+                  del data['shop_name']          # remove shop name for non-get requests
+            return data
+      
 
 
-
+# For using the product dict
 class ProductOrderSerializer(serializers.Serializer):
       id = serializers.IntegerField()
       quantity = serializers.IntegerField()
 
 class OrderSerializer(serializers.ModelSerializer):
       products = ProductOrderSerializer(many = True)
+      branch_name = serializers.CharField(source = 'branch.name', read_only = True)
+      customer_name = serializers.CharField(source = 'customer.name', read_only = True)
       
       class Meta:
             model = Order
             fields = '__all__'
+            read_only_fields = ['branch_name', 'customer_name']
             
+      # Change representation for get
+      def to_representation(self, instance):
+            data = super().to_representation(instance)
+            request = self.context.get('request')
+            if request and request.method != 'GET':
+                  del data['branch_name']
+                  del data['customer_name']
+            return data
+      
+      # Create the order
       def create(self, validated_data):
             products_data = validated_data.pop('products')
             order = Order.objects.create(**validated_data)
