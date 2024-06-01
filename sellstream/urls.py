@@ -30,7 +30,7 @@ urlpatterns = [
     path('product_dashboard/', include('product_dashboard.urls')),
     path('shop/', include('shop.urls')),
     path('user/', include('third_party.urls')),
-    path('rating/', include('ratings.urls')),
+    # path('rating/', include('ratings.urls')),
 ]
 
 
