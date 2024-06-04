@@ -80,6 +80,7 @@ INSTALLED_APPS = [
     'third_party',
     'ratings',
     'django_filters',
+    'payment',
 ]
 
 MIDDLEWARE = [
@@ -219,3 +220,10 @@ EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = os.getenv("EMAIL")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_PASSWORD")
+
+
+
+# settings.py
+SSLCOMMERZ_STORE_ID = 'sells665ab367788f8'
+SSLCOMMERZ_STORE_PASSWORD = 'sells665ab367788f8@ssl'
+SSLCOMMERZ_SANDBOX = True  # Set to False for production
