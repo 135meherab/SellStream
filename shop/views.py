@@ -31,7 +31,7 @@ class ShopCreateView(CreateAPIView):
     queryset = Shop.objects.all()
     serializer_class = ShopSerializer
 
-    authentication_classes = [TokenAuthentication]
+    # authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
@@ -46,7 +46,7 @@ class ShopList(ListAPIView):
     queryset = Shop.objects.all()
     serializer_class = ShopSerializer
 
-    authentication_classes = [TokenAuthentication]
+    # authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]  # Assuming IsAuthenticated is sufficient
 
     def get_queryset(self):
@@ -74,7 +74,7 @@ class Branchviewset(viewsets.ModelViewSet):
     serializer_class = BranchSerializer
 
     permission_classes = [IsAuthenticated]
-    authentication_classes = [TokenAuthentication]
+    # authentication_classes = [TokenAuthentication]
 
     # Customizing the queryset based on the user role
     def get_queryset(self):
@@ -123,6 +123,37 @@ class Branchviewset(viewsets.ModelViewSet):
             return Response({"message": "Successfully sent information"}, status=status.HTTP_201_CREATED)
         except Exception as e:
             return Response({"message": f"Failed to send email: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+# class Branchviewset(viewsets.ModelViewSet):
+#     queryset = Branch.objects.all()
+#     serializer_class = BranchSerializer
+#     permission_classes = [IsAuthenticated]
+
+#     def get_queryset(self):
+#         user = self.request.user
+#         return Branch.objects.filter(shop__user=user)
+
+#     def perform_create(self, serializer):
+#         user = self.request.user
+#         shop = user.shop
+        
+#         branch_name = serializer.validated_data['name']
+#         shop_name = shop.name
+        
+#         username = f"{shop_name}.{branch_name}".replace(" ", ".")
+#         password = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+
+#         if User.objects.filter(username=username).exists():
+#             return Response({"message": "Branch already exists. Try another branch name"}, status=status.HTTP_400_BAD_REQUEST)
+        
+#         try:
+#             branch_user = User.objects.create_user(username=username, password=password)
+#         except Exception as e:
+#             return Response({"message": f"Failed to create user: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+#         serializer.save(user=branch_user, shop=shop)
+#         # No need to send email here as it's handled by the signal
+#         return Response({"message": "Branch created successfully"}, status=status.HTTP_201_CREATED)
         
 
 class RegisterAPIView(APIView):
@@ -217,7 +248,7 @@ class UserLogin(APIView):
 
 class UserLogout(APIView):
     permission_classes = [IsAuthenticated]
-    authentication_classes = [TokenAuthentication]
+    # authentication_classes = [TokenAuthentication]
     
     def get(self, request):
         if request.user.is_authenticated:
@@ -236,7 +267,7 @@ class UserDetailView(ListAPIView):
     queryset = User.objects.all()
     serializer_class = DetailsSerializer
 
-    authentication_classes = [TokenAuthentication]
+    # authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
