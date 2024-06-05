@@ -18,6 +18,7 @@ from django.core.mail import EmailMultiAlternatives
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
+from django.http import HttpResponse
 from rest_framework.authtoken.models import Token
 from rest_framework.generics import CreateAPIView, ListAPIView
 from rest_framework import viewsets
@@ -188,9 +189,11 @@ class EmailVerificationView(View):
             user.is_active = True
             user.save()
             messages.success(request, 'Email verification successful. You can now log in.')
+            return redirect('https://sell-stream.netlify.app/login')
         else:
             messages.error(request, 'Email verification failed.')
-        return redirect('Login')
+        # Do not redirect to login page
+        return HttpResponse('Email verification failed.')
 
 
 class UserLogin(APIView):

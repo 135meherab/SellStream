@@ -1,4 +1,59 @@
-<div>
-    <h3>Active your account to click the link</h3>
-    <a href="{{confirm_link}}">{{confirm_link}}</a>
-</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activate Your Account</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        h3 {
+            color: #555;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        a {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin-top: 20px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #3498db;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .button:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h3>Activate Your Account</h3>
+        <p>Thank you for registering! Please click the link below to activate your account:</p>
+        <a href="{{ confirm_link }}" class="button">Activate Account</a>
+        <p>Best regards,<br>SellStream</p>
+    </div>
+</body>
+</html>
