@@ -9,7 +9,8 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.filters import SearchFilter
-from django_filters.rest_framework import DjangoFilterBackend   
+from django_filters.rest_framework import DjangoFilterBackend 
+from shop.models import Branch  
 # Create your views here.
 
 # Designation
@@ -38,6 +39,16 @@ class EmployeeViews(viewsets.ModelViewSet):
 
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        branch = Branch.objects.get(user=user)
+        serializer.save(branch=branch)
+
+    def get_queryset(self):
+        user = self.request.user
+        branch = Branch.objects.get(user=user)
+        return EmployeeModel.objects.filter(branch=branch)
 
 
 
