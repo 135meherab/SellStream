@@ -1,7 +1,9 @@
+
+from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, generics, status, response, permissions, pagination, authentication
 from django_filters import rest_framework as filters
-from .models import Category, Product, Customer, Order
-from .serializers import CategorySerializer, ProductSerializer, CustomerSerializer, OrderSerializer
+from .models import Category, Product, Customer, Order, Refund
+from .serializers import CategorySerializer, ProductSerializer, CustomerSerializer, OrderSerializer, RefundSerializer
 from .filters import ProductFilter, OrderFilter
 from shop.models import Branch
 
@@ -18,12 +20,14 @@ class CategoryAPIView(viewsets.ModelViewSet):
             return {'request': self.request}
       
       def get_queryset(self):
-            # check for swagger view
-            if getattr(self, 'swagger_fake_view', False):
-                  return Category.objects.none()
+            user = self.request.user
             
-            return Category.objects.filter(shop = self.request.user.shop).order_by('-id')
-      
+            # Check the user is shop or branch
+            if hasattr(user, 'shop'):
+                  return Category.objects.filter(shop = user.shop).order_by('-id')
+            elif hasattr(user, 'branch'):
+                  return Category.objects.filter(shop = user.branch.shop).order_by('-id')
+            return Category.objects.none()
       
 class ProductAPIView(viewsets.ModelViewSet):
       permission_classes = [permissions.IsAuthenticated]
@@ -38,13 +42,13 @@ class ProductAPIView(viewsets.ModelViewSet):
       def get_queryset(self):
             user = self.request.user
             
-            # By technically all products have a relation with a user
+            # Check the user is shop or branch
             if hasattr(user, 'shop'):
-                  shop = user.shop
-                  branches = shop.branch_set.all()
-                  return Product.objects.filter(branch__in=branches).order_by('-id')
-            else:
-                  return Product.objects.none()
+                  branches = user.shop.branch_set.all()
+                  return Product.objects.filter(branch__in = branches).order_by('-id')
+            elif hasattr(user, 'branch'):
+                  return Product.objects.filter(branch = user.branch).order_by('-id')
+            return Product.objects.none()
 
 
 class CustomerListAPIView(generics.ListAPIView):
@@ -56,11 +60,17 @@ class CustomerListAPIView(generics.ListAPIView):
       
       def get_queryset(self):
             user = self.request.user
+            
+            # Check the user is shop or branch
             if hasattr(user, 'shop'):
-                  shop =user.shop
-                  return Customer.objects.filter(shop=shop).order_by('-id')
-            else:
-                  return Customer.objects.none()
+                  return Customer.objects.filter(shop=user.shop).distinct().order_by('-id')
+            elif hasattr(user, 'branch'):
+                  # Filter customers who have orders in the specific branch
+                  return Customer.objects.filter(
+                              id__in = Order.objects.filter(branch = user.branch).values('customer_id')
+                        ).order_by('-id')
+            return Customer.objects.none()
+            
 
 class OrderListAPIView(generics.ListCreateAPIView):
       permission_classes = [permissions.IsAuthenticated]
@@ -73,24 +83,37 @@ class OrderListAPIView(generics.ListCreateAPIView):
       
       def get_queryset(self):
             user = self.request.user
-            if hasattr(user, 'shop'):
-                  shop = user.shop
-                  branches = shop.branch_set.all()
-                  return Order.objects.filter(branch__in = branches).order_by('-id')
-            else:
-                  return Order.objects.none()
             
+            # Check the user is shop or branch
+            if hasattr(user, 'shop'):
+                  branches = user.shop.branches_set.all()
+                  return Order.objects.filter(branch__in = branches).order_by('-id')
+
+            elif hasattr(user, 'branch'):
+                  return Order.objects.filter(branch = user.branch).order_by('-id')
+            return Order.objects.none()
+
+
 
       def create(self, request, *args, **kwargs):
             serializer_context = {'request': request}
-            shop = request.user.shop 
+            user = request.user
+            
+            # Check the user is shop or branch
+            if hasattr(user, 'shop'):
+                  shop = user.shop
+            elif hasattr(user, 'branch'):
+                  shop = user.branch.shop
+            else:
+                  return response.Response({'detail': 'Invalid user'}, status=status.HTTP_400_BAD_REQUEST)
+
             customer_data = request.data.get('customer', {})
             customer_phone = customer_data.get('phone')
             customer_data['shop'] = shop.id
             
             # Create customer or finding by phone
             try:
-                  customer = Customer.objects.get(phone = customer_phone)
+                  customer = Customer.objects.get(phone = customer_phone, shop = shop)
             except Customer.DoesNotExist:
                   customer_serializer = CustomerSerializer(data=customer_data)
                   if customer_serializer.is_valid():
@@ -104,17 +127,48 @@ class OrderListAPIView(generics.ListCreateAPIView):
             # Create order
             order_data = request.data
             order_data['customer'] = customer.id
-            order_serializer = OrderSerializer(data=order_data)
+            
+            # If the user is in branch
+            if hasattr(user, 'branch'):
+                  order_data['branch'] = user.branch.id
+
+            order_serializer = OrderSerializer(data=order_data, context = serializer_context)
             # print(order_serializer)
             if order_serializer.is_valid():
-                  order = order_serializer.save()      
-                        
-                  return response.Response(
-                              order_serializer.data, 
-                              status=status.HTTP_201_CREATED,
-                        )
+                  order = order_serializer.save()            
+                  return response.Response(order_serializer.data, status=status.HTTP_201_CREATED)
             else:
-                  return response.Response(
-                              order_serializer.errors, 
-                              status=status.HTTP_400_BAD_REQUEST,
-                        )
+                  return response.Response(order_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                  
+                  
+                  
+class RefundListAPIView(generics.ListCreateAPIView):
+      permission_classes = [permissions.IsAuthenticated]
+      authentication_classes = [authentication.TokenAuthentication]
+      serializer_class = RefundSerializer
+      
+      def get_queryset(self):
+            user = self.request.user
+            
+            # Check the user is shop or branch
+            if hasattr(user, 'shop'):
+                  branches = user.shop.branch_set.all()
+                  return Refund.objects.filter(order__branch__in = branches).order_by('-id')
+            elif hasattr(user, 'branch'):
+                  return Refund.objects.filter(order__branch = user.branch).order_by('-id')
+            return Refund.objects.none()
+
+
+      def create(self, request, *args, **kwargs):
+            serializer = self.get_serializer(data = request.data)
+            serializer.is_valid(raise_exception = True)
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+            return response.Response(
+                  serializer.data,
+                  status = status.HTTP_201_CREATED,
+                  headers = headers
+            )
+
+
+
