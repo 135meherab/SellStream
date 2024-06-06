@@ -32,7 +32,7 @@ class ShopCreateView(CreateAPIView):
     queryset = Shop.objects.all()
     serializer_class = ShopSerializer
 
-    # authentication_classes = [TokenAuthentication]
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
@@ -47,12 +47,15 @@ class ShopList(ListAPIView):
     queryset = Shop.objects.all()
     serializer_class = ShopSerializer
 
-    # authentication_classes = [TokenAuthentication]
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]  # Assuming IsAuthenticated is sufficient
 
     def get_queryset(self):
         user = self.request.user
-        return Shop.objects.filter(user=user)
+        if user.is_superuser:
+            return Shop.objects.all()  # Admin sees all shops
+        else:
+            return Shop.objects.filter(user=user) # Others see only their own shops
 
 #update to shop
 class ShopUpdateView(APIView):
