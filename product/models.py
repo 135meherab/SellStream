@@ -15,7 +15,7 @@ class Customer(models.Model):
             )
 
       def __str__(self):
-            return f"{self.name} - {self.phone}"
+            return f"{self.name} - {self.phone} - {self.shop.name}"
 
 
 class Category(models.Model):
@@ -33,7 +33,7 @@ class Category(models.Model):
       
       
       def __str__(self):
-            return self.name
+            return f"{self.name} - {self.shop.name}"
 
 
 class Product(models.Model):
@@ -58,7 +58,7 @@ class Product(models.Model):
             super().save(*args, **kwargs)
       
       def __str__(self):
-            return f"{self.product_code} - {self.name}"
+            return f"{self.product_code} - {self.name} - {self.branch.name} - {self.branch.shop.name}"
 
 
 class Order(models.Model):
@@ -71,5 +71,15 @@ class Order(models.Model):
 
 
       def __str__(self):
-            return f"{self.order_unique_id} - {self.order_date}"
+            return f"{self.order_unique_id} - {self.order_date} - {self.branch.name} - {self.branch.shop.name}"
+      
+
+
+class Refund(models.Model):
+      order = models.OneToOneField(Order, on_delete=models.CASCADE)
+      refund_date = models.DateField(auto_now_add=True)
+      refund_reason = models.TextField()
+      
+      def __str__(self):
+            return f"{self.order.order_unique_id} - {self.refund_date} - {self.order.branch.name} - {self.order.branch.shop.name}"
       
