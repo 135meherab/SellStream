@@ -37,18 +37,37 @@ class EmployeeViews(viewsets.ModelViewSet):
     queryset = EmployeeModel.objects.all()
     serializer_class = EmployeeSerializers
 
-    authentication_classes = [TokenAuthentication]
+    # Only allow access if the user is authenticated
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
+        # Get the current user making the request
         user = self.request.user
+        # Find the branch linked to this user
         branch = Branch.objects.get(user=user)
+        # Save the new employee, linking them to the branch
         serializer.save(branch=branch)
 
     def get_queryset(self):
+        # Get the current user making the request
         user = self.request.user
-        branch = Branch.objects.get(user=user)
-        return EmployeeModel.objects.filter(branch=branch)
+
+        try:
+            # Try to find a branch linked to this user
+            branch = Branch.objects.get(user=user)
+            # If found, return employees from this branch
+            return EmployeeModel.objects.filter(branch=branch)
+        except Branch.DoesNotExist:
+            # If no branch is found, try to find a shop linked to this user
+            try:
+                shop = Shop.objects.get(user=user)
+                # If found, get all branches of this shop
+                branches = Branch.objects.filter(shop=shop)
+                # Return employees from all these branches
+                return EmployeeModel.objects.filter(branch__in=branches)
+            except Shop.DoesNotExist:
+                # If no branch or shop is found, return an empty list
+                return EmployeeModel.objects.none()
 
 
 

@@ -18,9 +18,12 @@ class CustomUserCreationSerializer(serializers.ModelSerializer):
 
         if password != confirm_password:
             raise serializers.ValidationError({'error': "Password Dosen't Matched"})
+        
+        if User.objects.filter(username = username).exists():
+            raise serializers.ValidationError({'error': "Username Already exits.Try to another username"})
             
         if User.objects.filter(email = email).exists():
-            raise serializers.ValidationError({'error': "Email Already exits"})
+            raise serializers.ValidationError({'error': "Email Already exits.Try to another email"})
         account = User(username = username,first_name = first_name,last_name = last_name, email = email)
         account.set_password(password)
         account.is_active = False
