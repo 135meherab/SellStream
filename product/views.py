@@ -1,7 +1,7 @@
 from rest_framework import viewsets, generics, status, response, permissions, pagination, authentication
 from django_filters import rest_framework as filters
-from .models import Category, Product, Customer, Order
-from .serializers import CategorySerializer, ProductSerializer, CustomerSerializer, OrderSerializer
+from .models import Category, Product, Customer, Order, Refund
+from .serializers import CategorySerializer, ProductSerializer, CustomerSerializer, OrderSerializer, RefundSerializer
 from .filters import ProductFilter, OrderFilter
 
 from rest_framework.pagination import PageNumberPagination
@@ -117,3 +117,30 @@ class OrderListAPIView(generics.ListCreateAPIView):
                               order_serializer.errors, 
                               status=status.HTTP_400_BAD_REQUEST,
                         )
+                  
+                  
+                  
+class RefundListAPIView(generics.ListCreateAPIView):
+      permission_classes = [permissions.IsAuthenticated]
+      authentication_classes = [authentication.TokenAuthentication]
+      serializer_class = RefundSerializer
+      
+      def get_queryset(self):
+            user = self.request.user
+            
+            # filer refunds by shop
+            return Refund.objects.filter(order__branch__shop__user = user).order_by('-id')
+      
+      def create(self, request, *args, **kwargs):
+            serializer = self.get_serializer(data = request.data)
+            serializer.is_valid(raise_exception = True)
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+            return response.Response(
+                  serializer.data,
+                  status = status.HTTP_201_CREATED,
+                  headers = headers
+            )
+
+
+

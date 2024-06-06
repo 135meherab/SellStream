@@ -73,3 +73,13 @@ class Order(models.Model):
       def __str__(self):
             return f"{self.order_unique_id} - {self.order_date}"
       
+
+
+class Refund(models.Model):
+      order = models.OneToOneField(Order, on_delete=models.CASCADE)
+      refund_date = models.DateField(auto_now_add=True)
+      refund_reason = models.TextField()
+      
+      def __str__(self):
+            return f"{self.order.order_unique_id} - {self.refund_date}"
+      
