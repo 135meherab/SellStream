@@ -61,12 +61,12 @@ class ShopUpdateView(APIView):
 
     serializers_class = ShopSerializer
     def put(self, request):
-        shop = Shop.objects.get(user=request.user)
-        serializer = ShopSerializer(instance=shop, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        shop = Shop.objects.get(user=request.user) # Get the shop related to the current user
+        serializer = ShopSerializer(instance=shop, data=request.data)   # Create a serializer instance with the shop data from the request
+        if serializer.is_valid():  # Check if the data provided is valid
+            serializer.save() # Save the updated shop data
+            return Response(serializer.data, status=status.HTTP_200_OK)  # Return the updated data
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)  # Return errors if data is invalid
 
 
 # create Branch,get,update,delete
@@ -87,8 +87,9 @@ class Branchviewset(viewsets.ModelViewSet):
         user = self.request.user
         shop = user.shop
         
-        branch_name = serializer.validated_data['name']
-        shop_name = shop.name
+        
+        branch_name = serializer.validated_data['name'] # Get the name of the new branch from the request
+        shop_name = shop.name   # Get the name of the shop
         
         # Generating username and password for the new branch user
         username = f"{shop_name}.{branch_name}".replace(" ", ".")
