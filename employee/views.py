@@ -41,13 +41,13 @@ class EmployeeViews(viewsets.ModelViewSet):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def perform_create(self, serializer):
-        # Get the current user making the request
-        user = self.request.user
-        # Find the branch linked to this user
-        branch = Branch.objects.get(user=user)
-        # Save the new employee, linking them to the branch
-        serializer.save(branch=branch)
+    # def perform_create(self, serializer):
+    #     # Get the current user making the request
+    #     user = self.request.user
+    #     # Find the branch linked to this user
+    #     branch = Branch.objects.get(user=user)
+    #     # Save the new employee, linking them to the branch
+    #     serializer.save(branch=branch)
 
     def get_queryset(self):
         # Get the current user making the request
