@@ -9,7 +9,8 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.filters import SearchFilter
-from django_filters.rest_framework import DjangoFilterBackend   
+from django_filters.rest_framework import DjangoFilterBackend 
+from shop.models import Branch  
 # Create your views here.
 
 # Designation
@@ -36,8 +37,38 @@ class EmployeeViews(viewsets.ModelViewSet):
     queryset = EmployeeModel.objects.all()
     serializer_class = EmployeeSerializers
 
+    # Only allow access if the user is authenticated
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
+
+    # def perform_create(self, serializer):
+    #     # Get the current user making the request
+    #     user = self.request.user
+    #     # Find the branch linked to this user
+    #     branch = Branch.objects.get(user=user)
+    #     # Save the new employee, linking them to the branch
+    #     serializer.save(branch=branch)
+
+    def get_queryset(self):
+        # Get the current user making the request
+        user = self.request.user
+
+        try:
+            # Try to find a branch linked to this user
+            branch = Branch.objects.get(user=user)
+            # If found, return employees from this branch
+            return EmployeeModel.objects.filter(branch=branch)
+        except Branch.DoesNotExist:
+            # If no branch is found, try to find a shop linked to this user
+            try:
+                shop = Shop.objects.get(user=user)
+                # If found, get all branches of this shop
+                branches = Branch.objects.filter(shop=shop)
+                # Return employees from all these branches
+                return EmployeeModel.objects.filter(branch__in=branches)
+            except Shop.DoesNotExist:
+                # If no branch or shop is found, return an empty list
+                return EmployeeModel.objects.none()
 
 
 
@@ -102,6 +133,9 @@ def send_transaction_email(designation, fullname, email, description_occation, s
 #####################
 
 class SpecialOccasionView(APIView):
+
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
     
     def get(self, request, format=None):
         data = SpecialOccasionModel.objects.all()

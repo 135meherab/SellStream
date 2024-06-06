@@ -1,4 +1,5 @@
 from rest_framework import decorators, response
+from product.models import Product
 from django.http import JsonResponse
 from datetime import datetime, timedelta
 import pandas as pd

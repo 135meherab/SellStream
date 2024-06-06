@@ -18,16 +18,19 @@ class CustomUserCreationSerializer(serializers.ModelSerializer):
 
         if password != confirm_password:
             raise serializers.ValidationError({'error': "Password Dosen't Matched"})
+        
+        if User.objects.filter(username = username).exists():
+            raise serializers.ValidationError({'error': "Username Already exits.Try to another username"})
             
         if User.objects.filter(email = email).exists():
-            raise serializers.ValidationError({'error': "Email Already exits"})
+            raise serializers.ValidationError({'error': "Email Already exits.Try to another email"})
         account = User(username = username,first_name = first_name,last_name = last_name, email = email)
         account.set_password(password)
         account.is_active = False
         account.save()
 
         return account
-    
+
 
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField(max_length = 50)
@@ -43,10 +46,6 @@ class DetailsSerializer(serializers.ModelSerializer):
         model = User 
         fields = ['id', 'username', 'email', 'first_name', 'last_name']    
 
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        representation['isadmin'] = instance.is_staff
-        return representation
 
 class UserListSerializer(serializers.ModelSerializer):
     class Meta:
@@ -64,7 +63,6 @@ class ShopSerializer(serializers.ModelSerializer):
     def get_user(self, obj):
         return f"{obj.user.first_name} {obj.user.last_name}"
     
-
     def create(self, validated_data):
         # Correct the type and get the user associated with the request
         user = self.context['request'].user
@@ -72,14 +70,16 @@ class ShopSerializer(serializers.ModelSerializer):
 
 class BranchSerializer(serializers.ModelSerializer):
     shop = serializers.SerializerMethodField()
-
     class Meta:
         model = Branch
         fields = ['id', 'name', 'location', 'shop']
     
     # Custom method to get the shop's name
     def get_shop(self, obj):
-        return obj.shop.name
+        if isinstance(obj, Branch):
+            return obj.shop.name
+        else:
+            return "Already have this Branch name  in a shop"
 
     def create(self, validated_data):
         # Correct the type and get the user associated with the request
@@ -109,6 +109,4 @@ class PasswordChangeSerializer(serializers.Serializer):
             raise serializers.ValidationError({'old_password': 'Incorrect password.'})
 
         return data
-
-
 
