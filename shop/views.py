@@ -19,11 +19,11 @@ from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.models import Token
-from rest_framework.generics import CreateAPIView, ListAPIView,UpdateAPIView
+from rest_framework.generics import CreateAPIView, ListAPIView
 from rest_framework import viewsets
 from datetime import datetime, timedelta
-from .permissions import IsOwner
-
+import random
+import string
 
 
 # create a shop
@@ -46,14 +46,16 @@ class ShopList(ListAPIView):
     queryset = Shop.objects.all()
     serializer_class = ShopSerializer
 
-    authentication_classes = [TokenAuthentication]
+    #authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]  # Assuming IsAuthenticated is sufficient
 
     def get_queryset(self):
         user = self.request.user
-        if user.is_staff:  # Assuming 'is_staff' indicates an admin user
+        if user.is_superuser:
             return Shop.objects.all()
-        return Shop.objects.filter(user=user)
+        else:
+            return Shop.objects.filter(user=user)
+
 
 #update to shop
 class ShopUpdateView(APIView):
@@ -72,23 +74,60 @@ class ShopUpdateView(APIView):
 
 # create Branch,get,update,delete
 class Branchviewset(viewsets.ModelViewSet):
-    queryset = Branch.objects.all()
+    queryset = Branch.objects.all()  # Initial queryset to fetch all Branch objects
     serializer_class = BranchSerializer
 
-    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
 
+    # Customizing the queryset based on the user role
     def get_queryset(self):
         user = self.request.user
-        if user.is_staff:        # Assuming 'is_staff' indicates an admin user
-            return Branch.objects.all()  # Admin can see all branches
-        return Branch.objects.filter(shop__user=user)  # Regular users can only see their own branches
-    
-    # def perform_create(self, serializer):
-    #     # Associate the branch with the current user before saving
-    #     serializer.save(shop__user=self.request.user)
-    
+        return Branch.objects.filter(shop__user=user)  # Else, return Branches related to the user's shop
 
+    # Custom method to create a new Branch
+    def perform_create(self, serializer):
+        user = self.request.user
+        shop = user.shop
+        
+        branch_name = serializer.validated_data['name']
+        shop_name = shop.name
+        
+        # Generating username and password for the new branch user
+        username = f"{shop_name}.{branch_name}".replace(" ", ".")
+        password = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+
+        if User.objects.filter(username=username).exists():
+            return Response({"message": "Branch already exists.Try to another branch name"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            # Creating a new user for the branch
+            branch_user = User.objects.create_user(username=username, password=password)
+        except Exception as e:
+            return Response({"message": f"Failed to create user: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        # Saving the new branch with the associated user and shop
+        serializer.save(user=branch_user, shop=shop)
+        
+        # Sending an email notification to the owner about the new branch
+        email_subject = "New Branch Created"
+        email_body = render_to_string('branch.html', {
+            'user': user,
+            'username': username,
+            'password': password,
+            'branch_name': branch_name,
+            'shop_name': shop_name
+        })
+        
+        try:
+            # Sending the email
+            email = EmailMultiAlternatives(email_subject, '', to=[user.email])
+            email.attach_alternative(email_body, "text/html")
+            email.send()
+            return Response({"message": "Successfully sent information"}, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({"message": f"Failed to send email: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
 
 class RegisterAPIView(APIView):
     serializer_class = CustomUserCreationSerializer
@@ -128,46 +167,86 @@ class EmailVerificationView(View):
 
 
 class UserLogin(APIView):
-    def post(self,request):
-        serializer = LoginSerializer(data = self.request.data)
+    def post(self, request):
+        # Creating an instance of LoginSerializer with the request data
+        serializer = LoginSerializer(data=self.request.data)
+        
+        # Checking if the serializer data is valid
         if serializer.is_valid():
+            # Extracting username and password from validated data
             username = serializer.validated_data['username']
             password = serializer.validated_data['password']
 
-            user = authenticate(username = username, password = password)
+            # Authenticating the user with the provided credentials
+            user = authenticate(username=username, password=password)
             if user:
+                # Setting logout time 30 minutes from now
                 logout_time = datetime.now() + timedelta(minutes=30)
-                token, created = Token.objects.get_or_create(user = user)
-                login(request,user)
+                
+                # Generating or retrieving existing token for the authenticated user
+                token, created = Token.objects.get_or_create(user=user)
+                
+                # Logging in the user
+                login(request, user)
+                
+                # Storing logout time in session
                 request.session['logout_time'] = logout_time.strftime('%Y-%m-%d %H:%M:%S')
-                return Response({'token' : token.key, 'user_id': user.id, 'logout_time' : logout_time})    
+
+                # Constructing user_info dictionary based on user type
+                user_info = {}
+                if hasattr(user, 'branch'):
+                    # User is a manager
+                    user_info['role'] = 'isbranch'
+                    user_info['username'] = user.username
+                elif user.is_superuser:
+                    # User is an admin
+                    user_info['role'] = 'isadmin'
+                    user_info['username'] = user.username
+                else:
+                    # User is an owner
+                    user_info['role'] = 'isowner'
+                    user_info['username'] = user.username
+                    user_info['first_name'] = user.first_name
+                    user_info['last_name'] = user.last_name
+                    user_info['email'] = user.email
+
+                # Returning response with token, user_id, logout_time, and user_info
+                return Response({'token': token.key, 'user_id': user.id, 'logout_time': logout_time, 'user_info': user_info})
             else:
-                return Response({'error': "Invalid Creadential"})
-            
+                # Returning error response for invalid credentials
+                return Response({'error': "Invalid Credentials"})
+
+
+
+
 class UserLogout(APIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [TokenAuthentication]
     
     def get(self, request):
         if request.user.is_authenticated:
-            request.user.auth_token.delete()
+            try:
+                request.user.auth_token.delete()
+            except AttributeError:
+                # User does not have an auth_token
+                pass
             logout(request)
             return redirect('Login')
         else:
             return Response({'error': 'User is not authenticated.'}, status=status.HTTP_401_UNAUTHORIZED)
-
+        
 #get all user        
 class UserDetailView(ListAPIView):
     queryset = User.objects.all()
     serializer_class = DetailsSerializer
 
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated, IsOwner]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
-        if user.is_staff:
-            return User.objects.all()  # Admin can see all users
+        if user.is_superuser:
+            return User.objects.all()  # Superuser can see all users
         return User.objects.filter(id=user.id)  # Regular users can only see their own Details
 
 

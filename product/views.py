@@ -1,8 +1,8 @@
-from django.shortcuts import render
-from decimal import Decimal
-from rest_framework import viewsets, generics, status, response, views, permissions, pagination, authentication
+from rest_framework import viewsets, generics, status, response, permissions, pagination, authentication
+from django_filters import rest_framework as filters
 from .models import Category, Product, Customer, Order
 from .serializers import CategorySerializer, ProductSerializer, CustomerSerializer, OrderSerializer
+from .filters import ProductFilter, OrderFilter
 
 from rest_framework.pagination import PageNumberPagination
 
@@ -17,6 +17,10 @@ class CategoryAPIView(viewsets.ModelViewSet):
             return {'request': self.request}
       
       def get_queryset(self):
+            # check for swagger view
+            if getattr(self, 'swagger_fake_view', False):
+                  return Category.objects.none()
+            
             return Category.objects.filter(shop = self.request.user.shop).order_by('-id')
       
       
@@ -25,6 +29,9 @@ class ProductAPIView(viewsets.ModelViewSet):
       authentication_classes = [authentication.TokenAuthentication]
       pagination_class = pagination.PageNumberPagination
       serializer_class = ProductSerializer
+      filter_backends = (filters.DjangoFilterBackend,)
+      filterset_class = ProductFilter
+      
       
       
       def get_queryset(self):
@@ -34,12 +41,12 @@ class ProductAPIView(viewsets.ModelViewSet):
             if hasattr(user, 'shop'):
                   shop = user.shop
                   branches = shop.branch_set.all()
-                  return Product.objects.filter(branch__in=branches).order_by('id')
+                  return Product.objects.filter(branch__in=branches).order_by('-id')
             else:
                   return Product.objects.none()
 
 
-class CustomerListAPIView(generics.ListCreateAPIView):
+class CustomerListAPIView(generics.ListAPIView):
       permission_classes = [permissions.IsAuthenticated]
       authentication_classes = [authentication.TokenAuthentication]
       serializer_class = CustomerSerializer
@@ -57,6 +64,8 @@ class CustomerListAPIView(generics.ListCreateAPIView):
 class OrderListAPIView(generics.ListCreateAPIView):
       permission_classes = [permissions.IsAuthenticated]
       authentication_classes = [authentication.TokenAuthentication]
+      filter_backends = (filters.DjangoFilterBackend,)
+      filterset_class = OrderFilter
       serializer_class = OrderSerializer
       pagination_class = pagination.PageNumberPagination
       page_size = 10
@@ -66,97 +75,45 @@ class OrderListAPIView(generics.ListCreateAPIView):
             if hasattr(user, 'shop'):
                   shop = user.shop
                   branches = shop.branch_set.all()
-                  return Order.objects_filter(branch__in = branches).order_by('-id')
+                  return Order.objects.filter(branch__in = branches).order_by('-id')
             else:
                   return Order.objects.none()
             
-
-
-# use api view for the custom method
-class OrderCreateAPIView(views.APIView): 
-      permission_classes = [permissions.IsAuthenticated]
-      authentication_classes = [authentication.TokenAuthentication] 
-
-      def post(self, request, *args, **kwargs):
-            # Create the customer with authenticated user
-            shop = request.user.shop
+            
+      def create(self, request, *args, **kwargs):
+            serializer_context = {'request': request}
+            shop = request.user.shop 
             customer_data = request.data.get('customer', {})
+            customer_phone = customer_data.get('phone')
             customer_data['shop'] = shop.id
-            customer_serializer = CustomerSerializer(data=customer_data)
-            if customer_serializer.is_valid():
-                  customer_instance = customer_serializer.save()
-            else:
-                  return response.Response(customer_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             
-            # create the order with the created customer
-            order_data = request.data.get('order', {})
-            order_data['customer'] = customer_instance.id
-            order_serializer = OrderSerializer(data=order_data)
-            if order_serializer.is_valid():
-                  order_instance = order_serializer.save()
-                  return response.Response(order_serializer.data, status=status.HTTP_201_CREATED)
-            else:
-                  return response.Response(order_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-      # def post(self, request, *args, **kwargs):
-      #       print("request data: ", request.data)
-      #       customer_data = request.data.get('customer', {})
-      #       phone_number  = customer_data.get('phone', None)
-            
-      #       # create or get customer based on phone number
-      #       try:
-      #             customer_instance = Customer.objects.get(phone = phone_number)
-      #       except Customer.DoesNotExist:
-      #             customer_serializer = CustomerSerializer(data=customer_data, context={'request': request})
-      #             if customer_serializer.is_valid():
-      #                   customer_instance = customer_serializer.save()
-      #             else:
-      #                   response.Response(customer_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-      #       # create order if customer is valid
-      #       if customer_instance:
-      #             order_data = request.data.get('order', {})
-      #             order_data['customer'] = customer_instance.id
-
-      #             order_serializer = OrderSerializer(data=order_data)
-      #       if customer_serializer.is_valid() and order_serializer.is_valid():
-      #             order_instance = order_serializer.save()  # save the order data
-                  
-      #             # Handle product quantities
-      #             products_data = request.data.get('products', [])
-      #             for product_data in products_data:
-      #                   product_id = product_data.get('product_id')
-      #                   quantity = product_data.get('quantity', 1)
-      #                   product = Product.objects.get(id=product_id)
-      #                   if product.quantity >= quantity:
-      #                         product.quantity -= quantity
-      #                         product.save()
-      #                   else:
-      #                         return response.Response(f"Product {product.name} is out of stock", status=status.HTTP_400_BAD_REQUEST)
+            # Create customer or finding by phone
+            try:
+                  customer = Customer.objects.get(phone = customer_phone)
+            except Customer.DoesNotExist:
+                  customer_serializer = CustomerSerializer(data=customer_data)
+                  if customer_serializer.is_valid():
+                        customer = customer_serializer.save()
+                  else:
+                        return response.Response(
+                                    customer_serializer.errors, 
+                                    status=status.HTTP_400_BAD_REQUEST,
+                              )                        
                         
-      #                   order_instance.products.add(product, through_defaults={'quantity': quantity})
-
-      #             # ensure the total price is a decimal
-      #             total_price_decimal = Decimal(order_instance.total_price)
-
-      #             # update the total purchase
-      #             customer_instance.total_purchase += total_price_decimal
-      #             customer_instance.save()
-
-      #             return response.Response(order_serializer.data, status=status.HTTP_201_CREATED)
-            
-            
-      #       return response.Response(order_serializer.is_valid(), status=status.HTTP_400_BAD_REQUEST)
-
-
-      # def get(self, request, *args, **kwargs):
-      #       paginator = pagination.PageNumberPagination()
-      #       paginator.page_size = 10
-      #       orders = Order.objects.all()
-      #       result_page = paginator.paginate_queryset(orders, request)
-      #       order_serializer = OrderSerializer(result_page, many=True)
-      #       return paginator.get_paginated_response(order_serializer.data)
-
-
-
+            # Create order
+            order_data = request.data
+            order_data['customer'] = customer.id
+            order_serializer = OrderSerializer(data=order_data)
+            # print(order_serializer)
+            if order_serializer.is_valid():
+                  order = order_serializer.save()      
+                        
+                  return response.Response(
+                              order_serializer.data, 
+                              status=status.HTTP_201_CREATED,
+                        )
+            else:
+                  return response.Response(
+                              order_serializer.errors, 
+                              status=status.HTTP_400_BAD_REQUEST,
+                        )

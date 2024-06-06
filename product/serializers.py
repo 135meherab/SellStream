@@ -6,16 +6,19 @@ class CategorySerializer(serializers.ModelSerializer):
       class Meta:
             model = Category
             fields = '__all__'
-            read_only_fields = ['shop']
+            extra_kwargs = {
+                  'shop': {'required': False}
+            }
             
       def create(self, validated_data):
             request = self.context.get('request')
             
             # check the request is exist or not
-            if request and hasattr(request.user, 'user'):
-                  user = request.user
-                  shop = user.shop
+            if request and hasattr(request.user, 'shop'):
+                  shop = request.user.shop
                   validated_data['shop'] = shop
+            else:
+                  raise serializers.ValidationError('User does not have a shop.')
             return super().create(validated_data)
 
 
@@ -50,6 +53,7 @@ class ProductSerializer(serializers.ModelSerializer):
 
             return data
 
+      # methods to find the relation with obj
       def get_branch_name(self, obj):
             return obj.branch.name if obj.branch else None
 
@@ -58,28 +62,59 @@ class ProductSerializer(serializers.ModelSerializer):
 
 
 
-class CustomerSerializer(serializers.ModelSerializer):
-      shop = serializers.PrimaryKeyRelatedField(
-            queryset = Shop.objects.all(),
-      )
+class CustomerSerializer(serializers.ModelSerializer):    
+      shop_name = serializers.CharField(source = 'shop.name', read_only = True)       # get the shop name
       
       class Meta:
             model = Customer
-            fields = ['name', 'phone', 'shop']
+            fields = ['name', 'phone', 'shop', 'shop_name', 'total_purchase']
+            
+      
+      # make presentation on get
+      def to_representation(self, instance):
+            data = super().to_representation(instance)
+            if self.context['request'].method != 'GET':
+                  del data['shop_name']          # remove shop name for non-get requests
+            return data
+      
 
 
+# For using the product dict
+class ProductOrderSerializer(serializers.Serializer):
+      id = serializers.IntegerField()
+      quantity = serializers.IntegerField()
 
 class OrderSerializer(serializers.ModelSerializer):
-      customer = CustomerSerializer()
+      products = ProductOrderSerializer(many = True)
+      branch_name = serializers.CharField(source = 'branch.name', read_only = True)
+      customer_name = serializers.CharField(source = 'customer.name', read_only = True)
       
       class Meta:
             model = Order
             fields = '__all__'
+            read_only_fields = ['branch_name', 'customer_name']
             
-            
+      # Change representation for get
+      def to_representation(self, instance):
+            data = super().to_representation(instance)
+            request = self.context.get('request')
+            if request and request.method != 'GET':
+                  del data['branch_name']
+                  del data['customer_name']
+            return data
+      
+      # Create the order
       def create(self, validated_data):
-            customer_data = validated_data.pop('customer')
-            customer = Customer.objects.create(**customer_data)
-            order = Order.objects.create(customer = customer, **validated_data)
-            return order
+            products_data = validated_data.pop('products')
+            order = Order.objects.create(**validated_data)
             
+            for product_data in products_data:
+                  product = Product.objects.get(id = product_data['id'])
+                  order.products.add(product)
+                  
+                  # update the product quantity
+                  product.quantity -= product_data['quantity']
+                  product.save()
+                  
+                  
+            return order

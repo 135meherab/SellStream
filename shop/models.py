@@ -12,12 +12,12 @@ class Shop(models.Model):
       def __str__(self):
             return self.name
       
-
 class Branch(models.Model):
       shop = models.ForeignKey(Shop, on_delete=models.CASCADE)
+      user = models.OneToOneField(User, on_delete=models.CASCADE)
       name = models.CharField(max_length=50)
       location = models.TextField()
-      
+
       
       def __str__(self):
             return self.name
