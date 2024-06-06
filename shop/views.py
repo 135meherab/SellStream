@@ -80,16 +80,22 @@ class Branchviewset(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     authentication_classes = [TokenAuthentication]
 
-    # Customizing the queryset based on the user role
     def get_queryset(self):
         user = self.request.user
-        return Branch.objects.filter(shop__user=user)  # Else, return Branches related to the user's shop
+        try:
+            branch = Branch.objects.get(user = user)    # Try to find a branch linked to this user
+            return Branch.objects.filter(id = branch.id) # If found, return this branch
+        except Branch.DoesNotExist:
+            try:
+                shop = Shop.objects.get(user = user)   # If no branch is found, try to find a shop linked to this user
+                return Branch.objects.filter(shop = shop)  # If found, return all branches of this shop
+            except Shop.DoesNotExist:
+                return Branch.objects.none() # return an empty queryset
 
     # Custom method to create a new Branch
     def perform_create(self, serializer):
         user = self.request.user
         shop = user.shop
-        
         
         branch_name = serializer.validated_data['name'] # Get the name of the new branch from the request
         shop_name = shop.name   # Get the name of the shop
@@ -255,7 +261,7 @@ class UserLogin(APIView):
 
 class UserLogout(APIView):
     permission_classes = [IsAuthenticated]
-    # authentication_classes = [TokenAuthentication]
+    authentication_classes = [TokenAuthentication]
     
     def get(self, request):
         if request.user.is_authenticated:
