@@ -78,7 +78,7 @@ class Branchviewset(viewsets.ModelViewSet):
     serializer_class = BranchSerializer
 
     permission_classes = [IsAuthenticated]
-    # authentication_classes = [TokenAuthentication]
+    authentication_classes = [TokenAuthentication]
 
     # Customizing the queryset based on the user role
     def get_queryset(self):
