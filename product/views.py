@@ -49,6 +49,23 @@ class ProductAPIView(viewsets.ModelViewSet):
             elif hasattr(user, 'branch'):
                   return Product.objects.filter(branch = user.branch).order_by('-id')
             return Product.objects.none()
+      
+      
+      # For creating and updating based on branch
+      def perform_create(self, serializer):
+            user = self.request.user
+            if hasattr(user, 'branch'):
+                  serializer.save(branch = user.branch)
+            else:
+                  serializer.save()
+      
+      
+      def perform_update(self, serializer):
+            user = self.request.user
+            if hasattr(user, 'branch'):
+                  serializer.save(branch = user.branch)
+            else:
+                  serializer.save()
 
 
 class CustomerListAPIView(generics.ListAPIView):

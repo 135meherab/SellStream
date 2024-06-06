@@ -5,12 +5,11 @@ from .models import Category, Product, Customer, Order, Refund
 from shop.models import Shop
 
 class CategorySerializer(serializers.ModelSerializer):
+      shop_name = serializers.CharField(source = 'shop.name', read_only = True)
+      
       class Meta:
             model = Category
-            fields = '__all__'
-            extra_kwargs = {
-                  'shop': {'required': False}
-            }
+            fields = ['name', 'uom', 'shop', 'shop_name']
             
       def create(self, validated_data):
             request = self.context.get('request')
@@ -22,6 +21,14 @@ class CategorySerializer(serializers.ModelSerializer):
             else:
                   raise serializers.ValidationError('User does not have a shop.')
             return super().create(validated_data)
+      
+      
+      # Make representation for get
+      def to_representation(self, instance):
+            data = super().to_representation(instance)
+            if self.context['request'].method != 'GET':
+                  del data['shop_name']
+            return data
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -51,8 +58,6 @@ class ProductSerializer(serializers.ModelSerializer):
                   data['product_code'] = instance.product_code
                   data['branch_name'] = instance.branch.name if instance.branch else None
                   data['category_name'] = instance.category.name if instance.category else None
-
-
             return data
 
       # methods to find the relation with obj
@@ -61,6 +66,23 @@ class ProductSerializer(serializers.ModelSerializer):
 
       def get_category_name(self, obj):
             return obj.category.name if obj.category else None
+      
+      
+      # For creating and updating the product from branch
+      def create(self, validated_data):
+            request = self.context.get('request')
+            user = request.user
+            if hasattr(user, 'branch'):
+                  validated_data['branch'] = user.branch
+            return super().create(validated_data)
+      
+      
+      def update(self, instance, validated_data):
+            request = self.context.get('request')
+            user = request.user
+            if hasattr(user, 'branch'):
+                  validated_data['branch'] = user.branch
+            return super().update(instance, validated_data)
 
 
 
