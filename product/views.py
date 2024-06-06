@@ -88,9 +88,11 @@ class OrderListAPIView(generics.ListCreateAPIView):
             if hasattr(user, 'shop'):
                   branches = user.shop.branches_set.all()
                   return Order.objects.filter(branch__in = branches).order_by('-id')
+
             elif hasattr(user, 'branch'):
                   return Order.objects.filter(branch = user.branch).order_by('-id')
             return Order.objects.none()
+
 
 
       def create(self, request, *args, **kwargs):
