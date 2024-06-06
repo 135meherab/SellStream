@@ -1,5 +1,7 @@
 from rest_framework import serializers
-from .models import Category, Product, Customer, Order
+from django.utils import timezone
+from datetime import timedelta
+from .models import Category, Product, Customer, Order, Refund
 from shop.models import Shop
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -106,8 +108,32 @@ class OrderSerializer(serializers.ModelSerializer):
       # Create the order
       def create(self, validated_data):
             products_data = validated_data.pop('products')
+            insufficient_products = []
+            
+            
+            # Check the product availability before creating the order
+            for product_data in products_data:
+                  product = Product.objects.get(id = product_data['id'])
+                  if product.quantity < product_data['quantity']:
+                        insufficient_products.append({
+                              'name': product.name,
+                              'available_quantity': product.quantity,
+                        })
+            
+            # send the total of insufficient products
+            if insufficient_products:
+                  raise serializers.ValidationError({
+                        'insufficient_products':[
+                              f"{item['name']} (available:{item['available_quantity']})"
+                              for item in insufficient_products
+                        ]
+                  })
+            
+            
+            # Create the order
             order = Order.objects.create(**validated_data)
             
+
             for product_data in products_data:
                   product = Product.objects.get(id = product_data['id'])
                   order.products.add(product)
@@ -118,3 +144,23 @@ class OrderSerializer(serializers.ModelSerializer):
                   
                   
             return order
+      
+      
+class RefundSerializer(serializers.ModelSerializer):
+      class Meta:
+            model = Refund
+            fields = '__all__'
+            read_only_fields = ['refund_date']
+            
+      def validate(self, data):
+            order = data['order']
+            refund_date = timezone.now().date()
+            
+            # check if the refund in 7 days
+            if refund_date > order.order_date + timedelta(days = 7):
+                  raise serializers.ValidationError(
+                        'Refund request is beyond the 7-day limit.'
+                  )
+            
+            return data
+
