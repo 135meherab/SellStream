@@ -38,6 +38,7 @@ class EmployeeViews(viewsets.ModelViewSet):
     serializer_class = EmployeeSerializers
 
     # Only allow access if the user is authenticated
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
@@ -132,6 +133,9 @@ def send_transaction_email(designation, fullname, email, description_occation, s
 #####################
 
 class SpecialOccasionView(APIView):
+
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
     
     def get(self, request, format=None):
         data = SpecialOccasionModel.objects.all()
