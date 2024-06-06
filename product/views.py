@@ -80,13 +80,6 @@ class OrderListAPIView(generics.ListCreateAPIView):
             else:
                   return Order.objects.none()
             
-      def perform_create(self, serializer):
-        # Get the current user making the request
-        user = self.request.user
-        # Find the Order linked to this user
-        branch = Branch.objects.get(user=user)
-        # Save the new Order, linking them to the branch
-        serializer.save(branch=branch)
 
       def create(self, request, *args, **kwargs):
             serializer_context = {'request': request}
