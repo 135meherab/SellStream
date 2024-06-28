@@ -52,22 +52,6 @@ class UserListSerializer(serializers.ModelSerializer):
         model = User 
         fields = ['username', 'first_name', 'last_name','email']    
 
-class ShopSerializer(serializers.ModelSerializer):
-    # Representing the user field with a custom method
-    user = serializers.SerializerMethodField()
-    class Meta:
-        model = Shop
-        fields = '__all__'
-
-    # Custom method to get the user's full name
-    def get_user(self, obj):
-        return f"{obj.user.first_name} {obj.user.last_name}"
-    
-    def create(self, validated_data):
-        # Correct the type and get the user associated with the request
-        user = self.context['request'].user
-        return Shop.objects.create(user=user, **validated_data)
-
 class BranchSerializer(serializers.ModelSerializer):
     shop = serializers.SerializerMethodField()
     class Meta:
@@ -93,6 +77,23 @@ class BranchSerializer(serializers.ModelSerializer):
         
         # Create and return the branch
         return Branch.objects.create(**validated_data)
+
+class ShopSerializer(serializers.ModelSerializer):
+    # Representing the user field with a custom method
+    user = serializers.SerializerMethodField()
+    branches = BranchSerializer(many=True, read_only=True)
+    class Meta:
+        model = Shop
+        fields = '__all__'
+
+    # Custom method to get the user's full name
+    def get_user(self, obj):
+        return f"{obj.user.first_name} {obj.user.last_name}"
+    
+    def create(self, validated_data):
+        # Correct the type and get the user associated with the request
+        user = self.context['request'].user
+        return Shop.objects.create(user=user, **validated_data)
         
 
 class PasswordChangeSerializer(serializers.Serializer):

@@ -13,7 +13,7 @@ class Shop(models.Model):
             return self.name
       
 class Branch(models.Model):
-      shop = models.ForeignKey(Shop, on_delete=models.CASCADE)
+      shop = models.ForeignKey(Shop,related_name='branches', on_delete=models.CASCADE)
       user = models.OneToOneField(User, on_delete=models.CASCADE)
       name = models.CharField(max_length=50)
       location = models.TextField()
