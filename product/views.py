@@ -103,7 +103,7 @@ class OrderListAPIView(generics.ListCreateAPIView):
             
             # Check the user is shop or branch
             if hasattr(user, 'shop'):
-                  branches = user.shop.branches_set.all()
+                  branches = user.shop.branch_set.all()
                   return Order.objects.filter(branch__in = branches).order_by('-id')
 
             elif hasattr(user, 'branch'):
