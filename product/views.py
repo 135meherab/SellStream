@@ -30,8 +30,8 @@ class CategoryAPIView(viewsets.ModelViewSet):
             return Category.objects.none()
       
 class ProductAPIView(viewsets.ModelViewSet):
-      permission_classes = [permissions.IsAuthenticated]
-      authentication_classes = [authentication.TokenAuthentication]
+      # permission_classes = [permissions.IsAuthenticated]
+      # authentication_classes = [authentication.TokenAuthentication]
       pagination_class = pagination.PageNumberPagination
       serializer_class = ProductSerializer
       filter_backends = (filters.DjangoFilterBackend,)
@@ -44,7 +44,7 @@ class ProductAPIView(viewsets.ModelViewSet):
             
             # Check the user is shop or branch
             if hasattr(user, 'shop'):
-                  branches = user.shop.branch_set.all()
+                  branches = user.shop.branches.all()
                   return Product.objects.filter(branch__in = branches).order_by('-id')
             elif hasattr(user, 'branch'):
                   return Product.objects.filter(branch = user.branch).order_by('-id')
