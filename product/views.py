@@ -30,8 +30,8 @@ class CategoryAPIView(viewsets.ModelViewSet):
             return Category.objects.none()
       
 class ProductAPIView(viewsets.ModelViewSet):
-      # permission_classes = [permissions.IsAuthenticated]
-      # authentication_classes = [authentication.TokenAuthentication]
+      permission_classes = [permissions.IsAuthenticated]
+      authentication_classes = [authentication.TokenAuthentication]
       pagination_class = pagination.PageNumberPagination
       serializer_class = ProductSerializer
       filter_backends = (filters.DjangoFilterBackend,)
