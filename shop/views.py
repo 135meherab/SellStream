@@ -39,7 +39,7 @@ class ShopCreateView(CreateAPIView):
         # Check if the user already has a shop
         existing_shop = Shop.objects.filter(user=request.user).exists()
         if existing_shop:
-            return Response({"detail": "You already have a shop. You cannot create another one."}, status=400)
+            return Response({"message": "You already have a shop. You cannot create another one."}, status=400)
         return super().create(request, *args, **kwargs)
 
 # get shop list
@@ -131,7 +131,7 @@ class Branchviewset(viewsets.ModelViewSet):
             email = EmailMultiAlternatives(email_subject, '', to=[user.email])
             email.attach_alternative(email_body, "text/html")
             email.send()
-            return Response({"message": "Successfully sent information"}, status=status.HTTP_201_CREATED)
+            return Response({"message": "Branch created successfully. User credentials sent to your email."}, status=status.HTTP_201_CREATED)
         except Exception as e:
             return Response({"message": f"Failed to send email: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -183,7 +183,7 @@ class RegisterAPIView(APIView):
             email.send()
             messages.success(request, 'Registration successful. Check your mail for confirmation')
             # return redirect('login')
-            return Response("Check your mail for confirmation")
+            return Response({"message": "Registration successful. Check your email for confirmation"}, status=status.HTTP_201_CREATED)
         return Response(user_serializer.errors)
         
         
@@ -254,7 +254,8 @@ class UserLogin(APIView):
                 return Response({'token': token.key, 'user_id': user.id, 'logout_time': logout_time, 'user_info': user_info})
             else:
                 # Returning error response for invalid credentials
-                return Response({'error': "Invalid Credentials"})
+                return Response({'error': "Invalid Credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 

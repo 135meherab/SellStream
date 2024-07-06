@@ -41,14 +41,6 @@ class EmployeeViews(viewsets.ModelViewSet):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
-    # def perform_create(self, serializer):
-    #     # Get the current user making the request
-    #     user = self.request.user
-    #     # Find the branch linked to this user
-    #     branch = Branch.objects.get(user=user)
-    #     # Save the new employee, linking them to the branch
-    #     serializer.save(branch=branch)
-
     def get_queryset(self):
         # Get the current user making the request
         user = self.request.user
@@ -65,7 +57,7 @@ class EmployeeViews(viewsets.ModelViewSet):
                 # If found, get all branches of this shop
                 branches = Branch.objects.filter(shop=shop)
                 # Return employees from all these branches
-                return EmployeeModel.objects.filter(branch__in=branches)
+                return EmployeeModel.objects.filter(employee__branch=branch)
             except Shop.DoesNotExist:
                 # If no branch or shop is found, return an empty list
                 return EmployeeModel.objects.none()
@@ -82,9 +74,34 @@ class Attendanceview(GenericAPIView, ListModelMixin, CreateModelMixin):
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_fields = ['employee__branch__name', 'date']
 
+    def get_queryset(self):
+        user = self.request.user   # Get the current user
+
+        try:
+            # Try to find branches for this user
+            branches = Branch.objects.get(user = user)  
+             # Get attendance records for these branches
+            return AttendanceModel.objects.filter(attendence_in = branches)
+        
+        except Branch.DoesNotExist:
+            try:
+                # If no branches, try to find a shop for this user
+                shop = Shop.objects.get(user=user)
+                 # Find all branches for this shop
+                branches = Branch.objects.filter(shop = shop)
+                # Get attendance records for these branches
+                return AttendanceModel.objects.filter(employee__branch__in=branches)
+            except Shop.DoesNotExist:
+                # If no branches or shop, return no records
+                return AttendanceModel.objects.none()
+        
+
+
     def get(self, request, *args, **kwargs):
+         # Handle GET requests, list leave records
         return self.list(request, *args, **kwargs)
     def post(self, request, *args, **kwargs):
+        # Handle POST requests, create a leave record
         return self.create(request, *args, **kwargs)
 
 class AttendanceviewRetrive(GenericAPIView, RetrieveModelMixin):
@@ -105,6 +122,26 @@ class Leaveview(GenericAPIView, ListModelMixin, CreateModelMixin):
 
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
+    def get_queryset(self):
+        user = self.request.user   # Get the current user
+
+        try:
+            # Try to find branches for this user
+            branches = Branch.objects.get(user = user)  
+             # Get leave records for these branches
+            return LeaveModel.objects.filter(leave_in = branches)
+        
+        except Branch.DoesNotExist:
+            try:
+                # If no branches, try to find a shop for this user
+                shop = Shop.objects.get(user=user)
+        
+                # Get leave records for employees in all branches of this shop
+                branches = Branch.objects.filter(shop = shop)
+                return LeaveModel.objects.filter(employee__branch__in = branches)
+            except Shop.DoesNotExist:
+                # If no branches or shop, return no records
+                return LeaveModel.objects.none()
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
