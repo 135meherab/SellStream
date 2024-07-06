@@ -18,8 +18,8 @@ class DesignationViews(viewsets.ModelViewSet):
     queryset = DesignationModel.objects.all()
     serializer_class = DesignationSerializers
 
-    permission_classes = [IsAuthenticated]
-    authentication_classes = [TokenAuthentication]
+    # permission_classes = [IsAuthenticated]
+    # authentication_classes = [TokenAuthentication]
 
     def get_queryset(self):
         try:
@@ -38,8 +38,8 @@ class EmployeeViews(viewsets.ModelViewSet):
     serializer_class = EmployeeSerializers
 
     # Only allow access if the user is authenticated
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    # authentication_classes = [TokenAuthentication]
+    # permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         # Get the current user making the request
@@ -49,7 +49,7 @@ class EmployeeViews(viewsets.ModelViewSet):
             # Try to find a branch linked to this user
             branch = Branch.objects.get(user=user)
             # If found, return employees from this branch
-            return EmployeeModel.objects.filter(branch=branch)
+            return EmployeeModel.objects.filter(branch = branch)
         except Branch.DoesNotExist:
             # If no branch is found, try to find a shop linked to this user
             try:
@@ -57,7 +57,7 @@ class EmployeeViews(viewsets.ModelViewSet):
                 # If found, get all branches of this shop
                 branches = Branch.objects.filter(shop=shop)
                 # Return employees from all these branches
-                return EmployeeModel.objects.filter(employee__branch=branch)
+                return EmployeeModel.objects.filter(branch__in = branches)
             except Shop.DoesNotExist:
                 # If no branch or shop is found, return an empty list
                 return EmployeeModel.objects.none()
@@ -69,8 +69,8 @@ class Attendanceview(GenericAPIView, ListModelMixin, CreateModelMixin):
     queryset = AttendanceModel.objects.all()
     serializer_class = AttendanceSerializers
 
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    # authentication_classes = [TokenAuthentication]
+    # permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_fields = ['employee__branch__name', 'date']
 
@@ -79,9 +79,9 @@ class Attendanceview(GenericAPIView, ListModelMixin, CreateModelMixin):
 
         try:
             # Try to find branches for this user
-            branches = Branch.objects.get(user = user)  
+            branch = Branch.objects.get(user = user)  
              # Get attendance records for these branches
-            return AttendanceModel.objects.filter(attendence_in = branches)
+            return AttendanceModel.objects.filter(employee__branch = branch)
         
         except Branch.DoesNotExist:
             try:
@@ -120,16 +120,16 @@ class Leaveview(GenericAPIView, ListModelMixin, CreateModelMixin):
     queryset = LeaveModel.objects.all()
     serializer_class = LeaveSerializers
 
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    # authentication_classes = [TokenAuthentication]
+    # permission_classes = [IsAuthenticated]
     def get_queryset(self):
         user = self.request.user   # Get the current user
 
         try:
             # Try to find branches for this user
-            branches = Branch.objects.get(user = user)  
+            branch = Branch.objects.get(user = user)  
              # Get leave records for these branches
-            return LeaveModel.objects.filter(leave_in = branches)
+            return LeaveModel.objects.filter(employee__branch = branch)
         
         except Branch.DoesNotExist:
             try:
