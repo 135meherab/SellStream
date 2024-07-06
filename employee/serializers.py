@@ -41,14 +41,20 @@ class EmployeeSerializers(serializers.ModelSerializer):
         return obj.branch.name if obj.branch else None
 
 class AttendanceSerializers(serializers.ModelSerializer):
+    employee_name = serializers.SerializerMethodField()
     class Meta:
         model = AttendanceModel
         fields = '__all__'
+    def get_employee_name(self, obj):
+        return obj.employee.fullname if obj.employee else None
 
 class LeaveSerializers(serializers.ModelSerializer):
+    employee_name = serializers.SerializerMethodField()
     class Meta:
         model = LeaveModel
         fields = '__all__'
+    def get_employee_name(self, obj):
+        return obj.employee.fullname if obj.employee else None
 
 class SpecialOccasionSerializers(serializers.ModelSerializer):
     class Meta:

@@ -18,12 +18,13 @@ class AnalysisReportSerializer(serializers.Serializer):
       
       @classmethod
       def get_shop_report(cls, shop):
-            branches = shop.branch_set.all()
+            branches = shop.branches.all()
             total_products = Product.objects.filter(branch__in = branches).count()
             total_categories = Category.objects.filter(shop = shop).count()
             total_orders = Order.objects.filter(branch__in = branches).count()
-            total_sales = Order.objects.filter(branch__in = branches)\
-                  .aggregate(total_sales = Sum('total_price'))['total_price'] or 0
+            total_sales_result = Order.objects.filter(branch__in=branches) \
+                                  .aggregate(total_sales=Sum('total_price'))
+            total_sales = total_sales_result['total_sales'] if total_sales_result['total_sales'] is not None else 0
             total_customers = Customer.objects.filter(shop = shop).count()
             total_employees = EmployeeModel.objects.filter(branch__in = branches).count()
             
