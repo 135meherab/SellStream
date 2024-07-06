@@ -18,8 +18,8 @@ class DesignationViews(viewsets.ModelViewSet):
     queryset = DesignationModel.objects.all()
     serializer_class = DesignationSerializers
 
-    # permission_classes = [IsAuthenticated]
-    # authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
 
     def get_queryset(self):
         try:
@@ -38,8 +38,8 @@ class EmployeeViews(viewsets.ModelViewSet):
     serializer_class = EmployeeSerializers
 
     # Only allow access if the user is authenticated
-    # authentication_classes = [TokenAuthentication]
-    # permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         # Get the current user making the request
@@ -69,8 +69,8 @@ class Attendanceview(GenericAPIView, ListModelMixin, CreateModelMixin):
     queryset = AttendanceModel.objects.all()
     serializer_class = AttendanceSerializers
 
-    # authentication_classes = [TokenAuthentication]
-    # permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_fields = ['employee__branch__name', 'date']
 
@@ -120,8 +120,8 @@ class Leaveview(GenericAPIView, ListModelMixin, CreateModelMixin):
     queryset = LeaveModel.objects.all()
     serializer_class = LeaveSerializers
 
-    # authentication_classes = [TokenAuthentication]
-    # permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
     def get_queryset(self):
         user = self.request.user   # Get the current user
 
