@@ -9,7 +9,7 @@ class CategorySerializer(serializers.ModelSerializer):
       
       class Meta:
             model = Category
-            fields = ['id','name', 'uom', 'shop', 'shop_name']
+            fields = ['id','name', 'uom', 'shop_name']
             
       def create(self, validated_data):
             request = self.context.get('request')
