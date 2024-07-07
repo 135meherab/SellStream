@@ -14,8 +14,8 @@ from django.db.models import Sum
 from product.models import Order, Category
 
 class ShopReportView(views.APIView):
-      # permission_classes = [permissions.IsAuthenticated]
-      # authentication_classes = [authentication.TokenAuthentication]
+      permission_classes = [permissions.IsAuthenticated]
+      authentication_classes = [authentication.TokenAuthentication]
       
       def get(self, request):
             user = request.user
