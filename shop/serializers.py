@@ -110,4 +110,17 @@ class PasswordChangeSerializer(serializers.Serializer):
             raise serializers.ValidationError({'old_password': 'Incorrect password.'})
 
         return data
+    
+class PasswordResetSerializer(serializers.Serializer):
+    new_password = serializers.CharField(required=True)
+    confirm_new_password = serializers.CharField(required=True)
+
+    def validate(self, data):
+        new_password = data.get('new_password')
+        confirm_new_password = data.get('confirm_new_password')
+
+        if new_password != confirm_new_password:
+            raise serializers.ValidationError("The two password fields didn't match.")
+
+        return data
 
