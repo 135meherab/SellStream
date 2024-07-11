@@ -44,8 +44,11 @@ class AnalysisReportSerializer(serializers.Serializer):
             total_products = Product.objects.filter(branch = branch).count()
             total_categories = Category.objects.filter(shop = branch.shop).count()
             total_orders = Order.objects.filter(branch = branch).count()
-            total_sales = Order.objects.filter(branch = branch)\
-                  .aggregate(total_sales = Sum('total_price'))['total_price'] or 0
+            # total_sales = Order.objects.filter(branch = branch)\
+            #       .aggregate(total_sales = Sum('total_price'))['total_price'] or 0
+            total_sales_result = Order.objects.filter(branch = branch) \
+                                  .aggregate(total_sales=Sum('total_price'))
+            total_sales = total_sales_result['total_sales'] if total_sales_result['total_sales'] is not None else 0
             total_customers = Customer.objects.filter(id__in = Order.objects.filter(branch = branch)\
                   .values('customer_id')).distinct().count()
             total_employee = EmployeeModel.objects.filter(branch = branch).count()
