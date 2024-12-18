@@ -11,7 +11,7 @@ from .views import (
     ShopList,
     ShopUpdateView,
     Branchviewset,
-    PasswordResetview,
+    PasswordResetView,
     VerifyOTPView,
     PasswordChangeViews
 )
@@ -32,7 +32,7 @@ urlpatterns = [
     path('createshop/', ShopCreateView.as_view(), name='shop-create'),
     path('get/', ShopList.as_view(), name='shop-list'),
     path('update/', ShopUpdateView.as_view(), name='shop-update'),
-    path('password/reset/request/', PasswordResetview.as_view(), name='password-reset-request'),
+    path('password/reset/request/', PasswordResetView.as_view(), name='password-reset-request'),
     path('verify-otp/', VerifyOTPView.as_view(), name='verify_otp'),
     path('password-change/', PasswordChangeViews.as_view(), name='password_change_url'),
 ]
