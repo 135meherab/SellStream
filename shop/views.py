@@ -30,6 +30,9 @@ from django.utils import timezone
 import json
 import random
 import string
+from django.utils.timezone import now, timedelta
+from .models import OTP  # Assume OTP model is already defined
+from .utils import encrypt_otp,decrypt_otp
 
 
 # create a shop
@@ -292,122 +295,127 @@ class PasswordChangeView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
-class PasswordResetview(APIView):
+class PasswordResetView(APIView):
     def post(self,request):
         email = request.data.get('email') # Get the email from the request data
         try:
             # Check if the user exists in the database
-            user = User.objects.get(email = email)
+            users = User.objects.filter(email = email)
         except User.DoesNotExist:
             return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
         
-        otp = get_random_string(length = 6, allowed_chars = '0123456789')  # Generate a random 6-digit OTP
+        otp = get_random_string(length=6, allowed_chars='0123456789')  # Generate a random 6-digit OTP
+        encrypted_otp = encrypt_otp(otp)
+        expiry_time = now() + timedelta(minutes=1)  # OTP valid for 1 minutes
 
-        # Encode the email and user ID for secure transmission
-        email_encode = urlsafe_base64_encode(force_bytes(email))
-        user_Id_encode = urlsafe_base64_encode(force_bytes(user.id))
-        data  = {'email': email_encode, 'user_id': user_Id_encode}
+        # First, delete expired OTPs (if any) before creating a new one
+        OTP.delete_expired_otps()
 
-        # Encode the data and OTP for secure storage
-        encoded_data = urlsafe_base64_encode(force_bytes(json.dumps(data)))
-        otp_encoded = urlsafe_base64_encode(force_bytes(otp))
+        # Save OTP for each user (if multiple users have the same email)
+        for user in users:
+            OTP.objects.update_or_create(
+                user_email=user.email,
+                defaults={"otp_encrypted": encrypted_otp, "expires_at": expiry_time}
+            )
 
-        cache.set(f'otp_{otp_encoded}', encoded_data , timeout=120)  # Store OTP in cache with a timeout of 120 seconds
+            # Render email template with OTP
+            email_subject = 'Password Reset OTP'
+            email_body = render_to_string('otp.html', {'otp': otp})
+            try:
+                email_message = EmailMultiAlternatives(email_subject, '', to=[user.email])
+                email_message.attach_alternative(email_body, "text/html")
+                email_message.send()
+            except Exception as e:
+                return Response({'error': 'Failed to send email. Please try again later.'},
+                                status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        # Send OTP email
-        email_subject = 'Password Reset OTP'
-        email_body = render_to_string('otp.html',{'otp': otp})
-        email = EmailMultiAlternatives(email_subject,'',to=[user.email])
-        email.attach_alternative(email_body,"text/html")
-        email.send()
-
-        request.session['email'] = email_encode  # Store email in session
-        messages.success(request, 'OTP sent to your email.')
-        return Response({'message': 'OTP sent to your email.'}, status=status.HTTP_200_OK)
+        return Response({'message': 'OTP sent to the email address.'}, status=status.HTTP_200_OK)
     
 
     
 
 class VerifyOTPView(APIView):
-    def post(self, request):
-        # Get OTP from request data
+   def post(self, request):
+        # Extract OTP from request data
         otp = request.data.get('otp')
-        otp_encoded = urlsafe_base64_encode(force_bytes(otp))
-
-        email_encoded = request.session.get('email') # Retrieve email from session
-        if not email_encoded:
-            return Response({'error': 'Email not found in session.'}, status=status.HTTP_400_BAD_REQUEST)
+        email = request.data.get('email')
         
-        # Decode user ID from email
-        decoded_user_id = urlsafe_base64_decode(email_encoded).decode()
-        attempt_count_key = f'otp_attempt_{decoded_user_id}'
-        attempt_count_encoded = urlsafe_base64_encode(force_bytes(attempt_count_key))
-        attempt_count = cache.get(attempt_count_encoded, 0)
-        
-        # Check if maximum attempts reached
-        if attempt_count == 2:
-            return Response({'error': 'Exceeded maximum OTP attempts. Please try again later.'}, status=status.HTTP_403_FORBIDDEN)
-        
-        # Get the verified OTP data from the cache
-        cached_data = cache.get(f'otp_{otp_encoded}')
-        
-        # Check if OTP is valid
-        if not cached_data:
-            # Increment attempt count and set timeout for attempts
-            attempt_count += 1
-            cache.set(attempt_count_encoded, attempt_count, timeout=300)  
-            
-            return Response({'error': 'Invalid OTP or OTP has expired.'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # OTP is valid, reset attempt count and delete email from session
-        cache.delete(attempt_count_key)
-        del request.session['email']
+        if not otp or not email:
+            return Response({"error": "OTP and email are required."}, status=status.HTTP_400_BAD_REQUEST)
 
+        try:
+            # Fetch the OTP record
+            otp_record = OTP.objects.get(user_email=email)
 
-        # Decode cached data
-        data = json.loads(force_str(urlsafe_base64_decode(cached_data)))
-        email = data['email']
-        user_id = data['user_id']     
+            # Check if OTP is already verified or expired
+            if otp_record.is_verified:
+                return Response({"error": "OTP has already been verified."}, status=status.HTTP_400_BAD_REQUEST)
+            if not otp_record.is_valid():
+                return Response({"error": "OTP is expired."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Store verified OTP in cache
-        data = {'email': email, 'user_id': user_id}
-        encoded_data = urlsafe_base64_encode(force_bytes(json.dumps(data)))
-        email_encoded = urlsafe_base64_encode(force_bytes(email))
-        cache.set(f'verified_otp_{email_encoded}', encoded_data, timeout=300)
+            # Check the number of failed attempts
+            if otp_record.failed_attempts >= 3:
+                # Delete OTP record after 3 failed attempts
+                otp_record.delete()
+                return Response({"error": "Too many failed attempts.Try again."}, 
+                                 status=status.HTTP_400_BAD_REQUEST)
 
-        request.session['email'] = email_encoded # Store email in session
+            # Decrypt OTP and compare with the input OTP
+            decrypted_otp = decrypt_otp(otp_record.otp_encrypted)
+            if otp == decrypted_otp:
+                # Mark OTP as verified
+                otp_record.is_verified = True
+                otp_record.failed_attempts = 0  # Reset failed attempts after successful verification
+                otp_record.save()
+
+                # Proceed with password change process
+                return Response({"message": "OTP verified. You can now change your password."}, 
+                                 status=status.HTTP_200_OK)
+            else:
+                # Increment the failed attempt count
+                otp_record.failed_attempts += 1
+                otp_record.save()
+
+                return Response({"error": "Invalid OTP."}, status=status.HTTP_400_BAD_REQUEST)
+
+        except OTP.DoesNotExist:
+            return Response({"error": "The OTP is not valid or has expired."}, status=status.HTTP_404_NOT_FOUND)
         
 
-        return Response({'message': 'OTP verified successfully. You can now change your password.' }, status=status.HTTP_200_OK)
-    
+        
 class PasswordChangeViews(APIView):
     def post(self, request):
+        # Validate input using the serializer
         serializer = PasswordResetSerializer(data=request.data)
         if serializer.is_valid():
-            new_password = serializer.validated_data['new_password']
+            # Extract the email and new password from the request data
+            email = request.data.get('email')
+            new_password = request.data.get('new_password')
 
-            # Get email from session and get verified OTP data from cache
-            email = request.session.get('email')
-            cached_data = cache.get(f'verified_otp_{email}')
-            
-            if not cached_data:
-                # Return error if verified OTP data not found or expired
-                return Response({'error': 'OTP verification not found or expired.'}, status=status.HTTP_400_BAD_REQUEST)
-            
-            # Decode verified OTP data
-            decoded_data = json.loads(force_bytes(urlsafe_base64_decode(cached_data)))
-            user_id = int(urlsafe_base64_decode(decoded_data['user_id']))
-            
-            # Get the user and set new password
-            user = User.objects.get(id=user_id)
-            user.set_password(new_password)
-            user.save()
+            # Check if the user exists
+            try:
+                user = User.objects.get(email=email)
+            except User.DoesNotExist:
+                return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
-            # Clear session and cache
-            del request.session['email']
-            cache.delete(f'verified_otp_{email}')
+            # Retrieve the OTP object for the given email
+            try:
+                otp_obj = OTP.objects.get(user_email=email)
+            except OTP.DoesNotExist:
+                return Response({"error": "Invalid OTP."}, status=status.HTTP_400_BAD_REQUEST)
             
-            return Response({'message': 'Password changed successfully.'}, status=status.HTTP_200_OK)
-        
+             # Check if the OTP has expired (expires_at < current time)
+            if otp_obj.expires_at < timezone.now():
+                return Response({"error": "Timeout. Please try again from the start."}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Check if the OTP has been verified (is_verified = True)
+            if otp_obj.is_verified:
+                # Update the user's password since OTP is verified
+                user.password = make_password(new_password)  # Hash new password
+                user.save()
+
+                return Response({"message": "Password successfully updated."}, status=status.HTTP_200_OK)
+            else:
+                return Response({"error": "OTP not verified."}, status=status.HTTP_400_BAD_REQUEST)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
